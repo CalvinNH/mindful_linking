@@ -1,0 +1,1118 @@
+{
+  "image_size": [
+    2048,
+    1536
+  ],
+  "dominant_quantized_colors": [
+    {
+      "rgb": [
+        34,
+        33,
+        36
+      ],
+      "hex": "#222124",
+      "count": 607735,
+      "share": 0.1932,
+      "luminance": 0.0156,
+      "chroma": 3
+    },
+    {
+      "rgb": [
+        255,
+        255,
+        255
+      ],
+      "hex": "#FFFFFF",
+      "count": 601358,
+      "share": 0.1912,
+      "luminance": 1.0,
+      "chroma": 0
+    },
+    {
+      "rgb": [
+        225,
+        225,
+        225
+      ],
+      "hex": "#E1E1E1",
+      "count": 519998,
+      "share": 0.1653,
+      "luminance": 0.7529,
+      "chroma": 0
+    },
+    {
+      "rgb": [
+        220,
+        234,
+        149
+      ],
+      "hex": "#DCEA95",
+      "count": 487549,
+      "share": 0.155,
+      "luminance": 0.7623,
+      "chroma": 85
+    },
+    {
+      "rgb": [
+        218,
+        241,
+        99
+      ],
+      "hex": "#DAF163",
+      "count": 99658,
+      "share": 0.0317,
+      "luminance": 0.7872,
+      "chroma": 142
+    },
+    {
+      "rgb": [
+        142,
+        143,
+        96
+      ],
+      "hex": "#8E8F60",
+      "count": 86945,
+      "share": 0.0276,
+      "luminance": 0.2624,
+      "chroma": 47
+    },
+    {
+      "rgb": [
+        163,
+        173,
+        109
+      ],
+      "hex": "#A3AD6D",
+      "count": 83128,
+      "share": 0.0264,
+      "luminance": 0.3878,
+      "chroma": 64
+    },
+    {
+      "rgb": [
+        215,
+        229,
+        147
+      ],
+      "hex": "#D7E593",
+      "count": 82765,
+      "share": 0.0263,
+      "luminance": 0.7259,
+      "chroma": 82
+    },
+    {
+      "rgb": [
+        187,
+        198,
+        130
+      ],
+      "hex": "#BBC682",
+      "count": 70462,
+      "share": 0.0224,
+      "luminance": 0.5256,
+      "chroma": 68
+    },
+    {
+      "rgb": [
+        185,
+        179,
+        223
+      ],
+      "hex": "#B9B3DF",
+      "count": 69284,
+      "share": 0.022,
+      "luminance": 0.4788,
+      "chroma": 44
+    },
+    {
+      "rgb": [
+        34,
+        34,
+        35
+      ],
+      "hex": "#222223",
+      "count": 67785,
+      "share": 0.0215,
+      "luminance": 0.0161,
+      "chroma": 1
+    },
+    {
+      "rgb": [
+        44,
+        42,
+        44
+      ],
+      "hex": "#2C2A2C",
+      "count": 57141,
+      "share": 0.0182,
+      "luminance": 0.0237,
+      "chroma": 2
+    },
+    {
+      "rgb": [
+        96,
+        100,
+        73
+      ],
+      "hex": "#606449",
+      "count": 48265,
+      "share": 0.0153,
+      "luminance": 0.1208,
+      "chroma": 27
+    },
+    {
+      "rgb": [
+        22,
+        18,
+        21
+      ],
+      "hex": "#161215",
+      "count": 45704,
+      "share": 0.0145,
+      "luminance": 0.0066,
+      "chroma": 4
+    },
+    {
+      "rgb": [
+        252,
+        252,
+        253
+      ],
+      "hex": "#FCFCFD",
+      "count": 35260,
+      "share": 0.0112,
+      "luminance": 0.9741,
+      "chroma": 1
+    },
+    {
+      "rgb": [
+        235,
+        234,
+        235
+      ],
+      "hex": "#EBEAEB",
+      "count": 35027,
+      "share": 0.0111,
+      "luminance": 0.8251,
+      "chroma": 1
+    },
+    {
+      "rgb": [
+        34,
+        33,
+        38
+      ],
+      "hex": "#222126",
+      "count": 33892,
+      "share": 0.0108,
+      "luminance": 0.0157,
+      "chroma": 5
+    },
+    {
+      "rgb": [
+        253,
+        255,
+        255
+      ],
+      "hex": "#FDFFFF",
+      "count": 27894,
+      "share": 0.0089,
+      "luminance": 0.9962,
+      "chroma": 2
+    },
+    {
+      "rgb": [
+        33,
+        33,
+        33
+      ],
+      "hex": "#212121",
+      "count": 23012,
+      "share": 0.0073,
+      "luminance": 0.0152,
+      "chroma": 0
+    },
+    {
+      "rgb": [
+        225,
+        225,
+        242
+      ],
+      "hex": "#E1E1F2",
+      "count": 10404,
+      "share": 0.0033,
+      "luminance": 0.7627,
+      "chroma": 17
+    }
+  ],
+  "regions": {
+    "background_outer": {
+      "box": [
+        0,
+        0,
+        2048,
+        337
+      ],
+      "size": [
+        2048,
+        337
+      ],
+      "colors": [
+        {
+          "rgb": [
+            220,
+            234,
+            149
+          ],
+          "hex": "#DCEA95",
+          "share": 0.4095,
+          "luminance": 0.7623,
+          "chroma": 85
+        },
+        {
+          "rgb": [
+            225,
+            225,
+            225
+          ],
+          "hex": "#E1E1E1",
+          "share": 0.3286,
+          "luminance": 0.7529,
+          "chroma": 0
+        },
+        {
+          "rgb": [
+            58,
+            57,
+            59
+          ],
+          "hex": "#3A393B",
+          "share": 0.1363,
+          "luminance": 0.0414,
+          "chroma": 2
+        },
+        {
+          "rgb": [
+            252,
+            253,
+            248
+          ],
+          "hex": "#FCFDF8",
+          "share": 0.0854,
+          "luminance": 0.9772,
+          "chroma": 5
+        },
+        {
+          "rgb": [
+            227,
+            227,
+            227
+          ],
+          "hex": "#E3E3E3",
+          "share": 0.0174,
+          "luminance": 0.7682,
+          "chroma": 0
+        },
+        {
+          "rgb": [
+            233,
+            234,
+            228
+          ],
+          "hex": "#E9EAE4",
+          "share": 0.0085,
+          "luminance": 0.8177,
+          "chroma": 6
+        },
+        {
+          "rgb": [
+            217,
+            228,
+            158
+          ],
+          "hex": "#D9E49E",
+          "share": 0.0067,
+          "luminance": 0.7271,
+          "chroma": 70
+        },
+        {
+          "rgb": [
+            223,
+            226,
+            228
+          ],
+          "hex": "#DFE2E4",
+          "share": 0.003,
+          "luminance": 0.7568,
+          "chroma": 5
+        },
+        {
+          "rgb": [
+            219,
+            233,
+            146
+          ],
+          "hex": "#DBE992",
+          "share": 0.0027,
+          "luminance": 0.7541,
+          "chroma": 87
+        },
+        {
+          "rgb": [
+            222,
+            233,
+            164
+          ],
+          "hex": "#DEE9A4",
+          "share": 0.0014,
+          "luminance": 0.7649,
+          "chroma": 69
+        }
+      ]
+    },
+    "sidebar": {
+      "box": [
+        102,
+        122,
+        471,
+        1382
+      ],
+      "size": [
+        369,
+        1260
+      ],
+      "colors": [
+        {
+          "rgb": [
+            34,
+            33,
+            36
+          ],
+          "hex": "#222124",
+          "share": 0.6015,
+          "luminance": 0.0156,
+          "chroma": 3
+        },
+        {
+          "rgb": [
+            218,
+            241,
+            99
+          ],
+          "hex": "#DAF163",
+          "share": 0.1208,
+          "luminance": 0.7872,
+          "chroma": 142
+        },
+        {
+          "rgb": [
+            243,
+            251,
+            203
+          ],
+          "hex": "#F3FBCB",
+          "share": 0.0517,
+          "luminance": 0.9236,
+          "chroma": 48
+        },
+        {
+          "rgb": [
+            212,
+            216,
+            148
+          ],
+          "hex": "#D4D894",
+          "share": 0.0461,
+          "luminance": 0.6525,
+          "chroma": 68
+        },
+        {
+          "rgb": [
+            33,
+            33,
+            33
+          ],
+          "hex": "#212121",
+          "share": 0.0404,
+          "luminance": 0.0152,
+          "chroma": 0
+        },
+        {
+          "rgb": [
+            35,
+            35,
+            36
+          ],
+          "hex": "#232324",
+          "share": 0.0364,
+          "luminance": 0.0169,
+          "chroma": 1
+        },
+        {
+          "rgb": [
+            218,
+            242,
+            96
+          ],
+          "hex": "#DAF260",
+          "share": 0.0238,
+          "luminance": 0.7925,
+          "chroma": 146
+        },
+        {
+          "rgb": [
+            112,
+            77,
+            79
+          ],
+          "hex": "#704D4F",
+          "share": 0.0221,
+          "luminance": 0.0932,
+          "chroma": 35
+        },
+        {
+          "rgb": [
+            34,
+            21,
+            29
+          ],
+          "hex": "#22151D",
+          "share": 0.022,
+          "luminance": 0.0097,
+          "chroma": 13
+        },
+        {
+          "rgb": [
+            34,
+            33,
+            38
+          ],
+          "hex": "#222126",
+          "share": 0.0146,
+          "luminance": 0.0157,
+          "chroma": 5
+        }
+      ]
+    },
+    "main_surface": {
+      "box": [
+        471,
+        122,
+        1925,
+        1382
+      ],
+      "size": [
+        1454,
+        1260
+      ],
+      "colors": [
+        {
+          "rgb": [
+            255,
+            255,
+            255
+          ],
+          "hex": "#FFFFFF",
+          "share": 0.3186,
+          "luminance": 1.0,
+          "chroma": 0
+        },
+        {
+          "rgb": [
+            225,
+            225,
+            225
+          ],
+          "hex": "#E1E1E1",
+          "share": 0.2899,
+          "luminance": 0.7529,
+          "chroma": 0
+        },
+        {
+          "rgb": [
+            34,
+            33,
+            36
+          ],
+          "hex": "#222124",
+          "share": 0.2329,
+          "luminance": 0.0156,
+          "chroma": 3
+        },
+        {
+          "rgb": [
+            226,
+            225,
+            232
+          ],
+          "hex": "#E2E1E8",
+          "share": 0.0396,
+          "luminance": 0.7585,
+          "chroma": 7
+        },
+        {
+          "rgb": [
+            253,
+            253,
+            254
+          ],
+          "hex": "#FDFDFE",
+          "share": 0.0285,
+          "luminance": 0.9829,
+          "chroma": 1
+        },
+        {
+          "rgb": [
+            241,
+            240,
+            240
+          ],
+          "hex": "#F1F0F0",
+          "share": 0.0216,
+          "luminance": 0.8731,
+          "chroma": 1
+        },
+        {
+          "rgb": [
+            33,
+            33,
+            33
+          ],
+          "hex": "#212121",
+          "share": 0.0196,
+          "luminance": 0.0152,
+          "chroma": 0
+        },
+        {
+          "rgb": [
+            219,
+            241,
+            106
+          ],
+          "hex": "#DBF16A",
+          "share": 0.0195,
+          "luminance": 0.7901,
+          "chroma": 135
+        },
+        {
+          "rgb": [
+            16,
+            16,
+            17
+          ],
+          "hex": "#101011",
+          "share": 0.016,
+          "luminance": 0.0052,
+          "chroma": 1
+        },
+        {
+          "rgb": [
+            121,
+            118,
+            135
+          ],
+          "hex": "#797687",
+          "share": 0.0075,
+          "luminance": 0.1877,
+          "chroma": 17
+        }
+      ]
+    },
+    "white_card": {
+      "box": [
+        512,
+        337,
+        983,
+        1320
+      ],
+      "size": [
+        471,
+        983
+      ],
+      "colors": [
+        {
+          "rgb": [
+            255,
+            255,
+            255
+          ],
+          "hex": "#FFFFFF",
+          "share": 0.5536,
+          "luminance": 1.0,
+          "chroma": 0
+        },
+        {
+          "rgb": [
+            35,
+            35,
+            37
+          ],
+          "hex": "#232325",
+          "share": 0.1002,
+          "luminance": 0.0169,
+          "chroma": 2
+        },
+        {
+          "rgb": [
+            187,
+            178,
+            245
+          ],
+          "hex": "#BBB2F5",
+          "share": 0.0973,
+          "luminance": 0.49,
+          "chroma": 67
+        },
+        {
+          "rgb": [
+            225,
+            226,
+            220
+          ],
+          "hex": "#E1E2DC",
+          "share": 0.0883,
+          "luminance": 0.7557,
+          "chroma": 6
+        },
+        {
+          "rgb": [
+            219,
+            241,
+            106
+          ],
+          "hex": "#DBF16A",
+          "share": 0.0532,
+          "luminance": 0.7901,
+          "chroma": 135
+        },
+        {
+          "rgb": [
+            248,
+            248,
+            248
+          ],
+          "hex": "#F8F8F8",
+          "share": 0.0405,
+          "luminance": 0.9387,
+          "chroma": 0
+        },
+        {
+          "rgb": [
+            253,
+            255,
+            255
+          ],
+          "hex": "#FDFFFF",
+          "share": 0.0299,
+          "luminance": 0.9962,
+          "chroma": 2
+        },
+        {
+          "rgb": [
+            17,
+            17,
+            18
+          ],
+          "hex": "#111112",
+          "share": 0.0123,
+          "luminance": 0.0056,
+          "chroma": 1
+        },
+        {
+          "rgb": [
+            187,
+            179,
+            238
+          ],
+          "hex": "#BBB3EE",
+          "share": 0.0083,
+          "luminance": 0.4898,
+          "chroma": 59
+        },
+        {
+          "rgb": [
+            155,
+            151,
+            183
+          ],
+          "hex": "#9B97B7",
+          "share": 0.0069,
+          "luminance": 0.3252,
+          "chroma": 32
+        }
+      ]
+    },
+    "dark_card": {
+      "box": [
+        1044,
+        814,
+        1863,
+        1320
+      ],
+      "size": [
+        819,
+        506
+      ],
+      "colors": [
+        {
+          "rgb": [
+            34,
+            33,
+            36
+          ],
+          "hex": "#222124",
+          "share": 0.6594,
+          "luminance": 0.0156,
+          "chroma": 3
+        },
+        {
+          "rgb": [
+            43,
+            42,
+            45
+          ],
+          "hex": "#2B2A2D",
+          "share": 0.0656,
+          "luminance": 0.0236,
+          "chroma": 3
+        },
+        {
+          "rgb": [
+            229,
+            238,
+            180
+          ],
+          "hex": "#E5EEB4",
+          "share": 0.0546,
+          "luminance": 0.811,
+          "chroma": 58
+        },
+        {
+          "rgb": [
+            76,
+            76,
+            73
+          ],
+          "hex": "#4C4C49",
+          "share": 0.0495,
+          "luminance": 0.0719,
+          "chroma": 3
+        },
+        {
+          "rgb": [
+            34,
+            34,
+            34
+          ],
+          "hex": "#222222",
+          "share": 0.0278,
+          "luminance": 0.016,
+          "chroma": 0
+        },
+        {
+          "rgb": [
+            58,
+            58,
+            57
+          ],
+          "hex": "#3A3A39",
+          "share": 0.0254,
+          "luminance": 0.0422,
+          "chroma": 1
+        },
+        {
+          "rgb": [
+            39,
+            38,
+            43
+          ],
+          "hex": "#27262B",
+          "share": 0.0253,
+          "luminance": 0.0199,
+          "chroma": 5
+        },
+        {
+          "rgb": [
+            37,
+            37,
+            36
+          ],
+          "hex": "#252524",
+          "share": 0.0232,
+          "luminance": 0.0184,
+          "chroma": 1
+        },
+        {
+          "rgb": [
+            177,
+            173,
+            204
+          ],
+          "hex": "#B1ADCC",
+          "share": 0.0224,
+          "luminance": 0.4359,
+          "chroma": 31
+        },
+        {
+          "rgb": [
+            34,
+            33,
+            38
+          ],
+          "hex": "#222126",
+          "share": 0.0172,
+          "luminance": 0.0157,
+          "chroma": 5
+        }
+      ]
+    },
+    "lavender_chart": {
+      "box": [
+        552,
+        599,
+        962,
+        952
+      ],
+      "size": [
+        410,
+        353
+      ],
+      "colors": [
+        {
+          "rgb": [
+            255,
+            255,
+            255
+          ],
+          "hex": "#FFFFFF",
+          "share": 0.3009,
+          "luminance": 1.0,
+          "chroma": 0
+        },
+        {
+          "rgb": [
+            187,
+            178,
+            245
+          ],
+          "hex": "#BBB2F5",
+          "share": 0.2513,
+          "luminance": 0.49,
+          "chroma": 67
+        },
+        {
+          "rgb": [
+            34,
+            33,
+            36
+          ],
+          "hex": "#222124",
+          "share": 0.2326,
+          "luminance": 0.0156,
+          "chroma": 3
+        },
+        {
+          "rgb": [
+            225,
+            244,
+            126
+          ],
+          "hex": "#E1F47E",
+          "share": 0.1292,
+          "luminance": 0.8222,
+          "chroma": 118
+        },
+        {
+          "rgb": [
+            186,
+            178,
+            239
+          ],
+          "hex": "#BAB2EF",
+          "share": 0.0202,
+          "luminance": 0.4851,
+          "chroma": 61
+        },
+        {
+          "rgb": [
+            22,
+            22,
+            25
+          ],
+          "hex": "#161619",
+          "share": 0.0166,
+          "luminance": 0.0081,
+          "chroma": 3
+        },
+        {
+          "rgb": [
+            253,
+            252,
+            255
+          ],
+          "hex": "#FDFCFF",
+          "share": 0.0145,
+          "luminance": 0.9772,
+          "chroma": 3
+        },
+        {
+          "rgb": [
+            187,
+            178,
+            248
+          ],
+          "hex": "#BBB2F8",
+          "share": 0.0143,
+          "luminance": 0.4918,
+          "chroma": 70
+        },
+        {
+          "rgb": [
+            253,
+            255,
+            255
+          ],
+          "hex": "#FDFFFF",
+          "share": 0.0082,
+          "luminance": 0.9962,
+          "chroma": 2
+        },
+        {
+          "rgb": [
+            89,
+            87,
+            105
+          ],
+          "hex": "#595769",
+          "share": 0.0076,
+          "luminance": 0.0996,
+          "chroma": 18
+        }
+      ]
+    },
+    "lime_accent": {
+      "box": [
+        655,
+        768,
+        880,
+        998
+      ],
+      "size": [
+        225,
+        230
+      ],
+      "colors": [
+        {
+          "rgb": [
+            218,
+            241,
+            99
+          ],
+          "hex": "#DAF163",
+          "share": 0.2854,
+          "luminance": 0.7872,
+          "chroma": 142
+        },
+        {
+          "rgb": [
+            255,
+            255,
+            255
+          ],
+          "hex": "#FFFFFF",
+          "share": 0.2605,
+          "luminance": 1.0,
+          "chroma": 0
+        },
+        {
+          "rgb": [
+            187,
+            178,
+            245
+          ],
+          "hex": "#BBB2F5",
+          "share": 0.1581,
+          "luminance": 0.49,
+          "chroma": 67
+        },
+        {
+          "rgb": [
+            44,
+            44,
+            46
+          ],
+          "hex": "#2C2C2E",
+          "share": 0.1565,
+          "luminance": 0.0253,
+          "chroma": 2
+        },
+        {
+          "rgb": [
+            218,
+            241,
+            97
+          ],
+          "hex": "#DAF161",
+          "share": 0.0411,
+          "luminance": 0.7868,
+          "chroma": 144
+        },
+        {
+          "rgb": [
+            219,
+            241,
+            103
+          ],
+          "hex": "#DBF167",
+          "share": 0.0318,
+          "luminance": 0.7895,
+          "chroma": 138
+        },
+        {
+          "rgb": [
+            210,
+            223,
+            142
+          ],
+          "hex": "#D2DF8E",
+          "share": 0.0178,
+          "luminance": 0.6843,
+          "chroma": 81
+        },
+        {
+          "rgb": [
+            253,
+            252,
+            255
+          ],
+          "hex": "#FDFCFF",
+          "share": 0.0123,
+          "luminance": 0.9772,
+          "chroma": 3
+        },
+        {
+          "rgb": [
+            246,
+            252,
+            209
+          ],
+          "hex": "#F6FCD1",
+          "share": 0.0111,
+          "luminance": 0.9382,
+          "chroma": 43
+        },
+        {
+          "rgb": [
+            219,
+            242,
+            98
+          ],
+          "hex": "#DBF262",
+          "share": 0.0095,
+          "luminance": 0.7945,
+          "chroma": 144
+        }
+      ]
+    }
+  }
+}

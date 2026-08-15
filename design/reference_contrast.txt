@@ -1,0 +1,22 @@
+charcoal: #222124 luminance=0.0156
+white: #FFFFFF luminance=1.0000
+surface_gray: #E1E1E1 luminance=0.7529
+pale_lime: #DCEA95 luminance=0.7623
+vivid_lime: #DAF163 luminance=0.7872
+lavender: #BBB2F5 luminance=0.4900
+dark_gray: #4C4C49 luminance=0.0719
+muted_lavender: #B1ADCC luminance=0.4359
+near_black: #0C0C0C luminance=0.0037
+
+Pairs:
+charcoal on white: 16.02:1
+charcoal on pale_lime: 12.39:1
+charcoal on vivid_lime: 12.77:1
+charcoal on lavender: 8.24:1
+charcoal on surface_gray: 12.25:1
+white on charcoal: 16.02:1
+white on lavender: 1.94:1
+white on vivid_lime: 1.25:1
+surface_gray on charcoal: 12.25:1
+lavender on charcoal: 8.24:1
+pale_lime on charcoal: 12.39:1
