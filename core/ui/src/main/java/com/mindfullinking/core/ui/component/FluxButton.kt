@@ -20,9 +20,11 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.dp
-import com.mindfullinking.core.ui.theme.FluxPalette
 import com.mindfullinking.core.ui.theme.FluxTheme
+
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 
 enum class FluxButtonVariant {
     Primary,    // Signal Lime background (#DAF163) + Void Charcoal text (#222124)
@@ -46,46 +48,48 @@ fun FluxButton(
     enabled: Boolean = true,
     isLoading: Boolean = false,
     shape: Shape = FluxTheme.shapes.button,
-    contentPadding: PaddingValues = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
+    minWidth: Dp = FluxTheme.spacing.buttonMinWidth,
+    contentPadding: PaddingValues = PaddingValues(horizontal = FluxTheme.spacing.xxl, vertical = FluxTheme.spacing.md),
     content: @Composable RowScope.() -> Unit
 ) {
+    val colors = FluxTheme.colors
     val containerColor = when (variant) {
-        FluxButtonVariant.Primary -> FluxPalette.Signal
-        FluxButtonVariant.Secondary -> FluxPalette.Paper
-        FluxButtonVariant.Dark -> FluxPalette.Void
-        FluxButtonVariant.Data -> FluxPalette.Lavender
+        FluxButtonVariant.Primary -> colors.accentAction
+        FluxButtonVariant.Secondary -> colors.surface
+        FluxButtonVariant.Dark -> colors.surfaceInverted
+        FluxButtonVariant.Data -> colors.accentData
         FluxButtonVariant.Outlined -> Color.Transparent
         FluxButtonVariant.Ghost -> Color.Transparent
     }
 
     val contentColor = when (variant) {
-        FluxButtonVariant.Primary -> FluxPalette.Void
-        FluxButtonVariant.Secondary -> FluxPalette.Void
-        FluxButtonVariant.Dark -> FluxPalette.Paper
-        FluxButtonVariant.Data -> FluxPalette.Void
-        FluxButtonVariant.Outlined -> FluxPalette.Void
-        FluxButtonVariant.Ghost -> FluxPalette.Void
+        FluxButtonVariant.Primary -> colors.contentOnAction
+        FluxButtonVariant.Secondary -> colors.contentPrimary
+        FluxButtonVariant.Dark -> colors.contentOnInverted
+        FluxButtonVariant.Data -> colors.contentOnData
+        FluxButtonVariant.Outlined -> colors.contentPrimary
+        FluxButtonVariant.Ghost -> colors.contentPrimary
     }
 
     val disabledContainerColor = when (variant) {
-        FluxButtonVariant.Dark -> FluxPalette.CharcoalMuted.copy(alpha = 0.5f)
+        FluxButtonVariant.Dark -> colors.contentSecondary.copy(alpha = 0.5f)
         FluxButtonVariant.Outlined, FluxButtonVariant.Ghost -> Color.Transparent
-        else -> FluxPalette.Surface
+        else -> colors.background
     }
 
     val disabledContentColor = when (variant) {
-        FluxButtonVariant.Dark -> FluxPalette.Paper.copy(alpha = 0.5f)
-        else -> FluxPalette.CharcoalMuted
+        FluxButtonVariant.Dark -> colors.contentOnInverted.copy(alpha = 0.5f)
+        else -> colors.contentSecondary
     }
 
     val border = if (variant == FluxButtonVariant.Outlined) {
-        BorderStroke(1.5.dp, if (enabled) FluxPalette.Void else FluxPalette.CharcoalMuted)
+        BorderStroke(FluxTheme.spacing.borderThin, if (enabled) colors.contentPrimary else colors.contentSecondary)
     } else null
 
     Button(
         onClick = onClick,
         modifier = modifier
-            .defaultMinSize(minWidth = 64.dp, minHeight = FluxTheme.spacing.touchTargetMin)
+            .defaultMinSize(minWidth = minWidth, minHeight = FluxTheme.spacing.touchTargetMin)
             .semantics { role = Role.Button },
         enabled = enabled && !isLoading,
         shape = shape,
@@ -101,9 +105,9 @@ fun FluxButton(
         if (isLoading) {
             Box(contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(FluxTheme.spacing.iconMedium),
                     color = contentColor,
-                    strokeWidth = 2.5.dp
+                    strokeWidth = FluxTheme.spacing.borderEmphasis
                 )
             }
         } else {
@@ -127,7 +131,9 @@ fun FluxButton(
     enabled: Boolean = true,
     isLoading: Boolean = false,
     shape: Shape = FluxTheme.shapes.button,
-    contentPadding: PaddingValues = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
+    minWidth: Dp = FluxTheme.spacing.buttonMinWidth,
+    textStyle: TextStyle? = null,
+    contentPadding: PaddingValues = PaddingValues(horizontal = FluxTheme.spacing.xxl, vertical = FluxTheme.spacing.md)
 ) {
     FluxButton(
         onClick = onClick,
@@ -136,13 +142,21 @@ fun FluxButton(
         enabled = enabled,
         isLoading = isLoading,
         shape = shape,
+        minWidth = minWidth,
         contentPadding = contentPadding
     ) {
         Text(
             text = text,
-            style = FluxTheme.typography.labelLarge,
-            color = if (variant == FluxButtonVariant.Dark) FluxPalette.Paper else FluxPalette.Void
+            style = textStyle ?: FluxTheme.typography.labelLarge,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Clip,
+            color = when (variant) {
+                FluxButtonVariant.Dark -> FluxTheme.colors.contentOnInverted
+                FluxButtonVariant.Primary -> FluxTheme.colors.contentOnAction
+                FluxButtonVariant.Data -> FluxTheme.colors.contentOnData
+                else -> FluxTheme.colors.contentPrimary
+            }
         )
     }
 }
-

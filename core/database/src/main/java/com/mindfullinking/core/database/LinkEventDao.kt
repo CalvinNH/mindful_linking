@@ -12,6 +12,9 @@ interface LinkEventDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEvent(event: LinkEventEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertEvents(events: List<LinkEventEntity>)
+
     @Query("SELECT * FROM link_events WHERE link_id = :linkId ORDER BY timestamp_epoch_ms DESC")
     fun getEventsForLinkFlow(linkId: String): Flow<List<LinkEventEntity>>
 

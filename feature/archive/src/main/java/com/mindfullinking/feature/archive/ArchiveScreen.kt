@@ -31,6 +31,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mindfullinking.core.model.Link
+import com.mindfullinking.core.domain.BudgetResolution
 import com.mindfullinking.core.ui.component.FluxBadge
 import com.mindfullinking.core.ui.component.FluxBadgeVariant
 import com.mindfullinking.core.ui.component.FluxButton
@@ -70,10 +71,7 @@ fun ArchiveScreen(
             },
             onResolutionSelected = { resolution ->
                 showOverBudgetModal = false
-                if (resolution is OverBudgetResolution.TemporaryOverage) {
-                    viewModel.applyOverage(resolution.overagePoints, resolution.durationHours)
-                }
-                viewModel.restoreLink(target)
+                viewModel.restoreLink(target, resolution.toBudgetResolution())
                 restoreTargetLink = null
             }
         )
@@ -152,6 +150,20 @@ fun ArchiveScreen(
     }
 }
 
+private fun OverBudgetResolution.toBudgetResolution(): BudgetResolution = when (this) {
+    is OverBudgetResolution.FreeUpLink -> BudgetResolution.FreeUpLink(
+        linkId = linkId,
+        action = when (action) {
+            OverBudgetResolution.FreeUpAction.RESOLVE -> BudgetResolution.FreeUpAction.RESOLVE
+            OverBudgetResolution.FreeUpAction.ARCHIVE -> BudgetResolution.FreeUpAction.ARCHIVE
+            OverBudgetResolution.FreeUpAction.DELETE -> BudgetResolution.FreeUpAction.DELETE
+        }
+    )
+    is OverBudgetResolution.LowerPriority -> BudgetResolution.LowerPriority(linkId, newPriority)
+    is OverBudgetResolution.ReplaceLink -> BudgetResolution.ReplaceLink(linkIdToReplace)
+    is OverBudgetResolution.TemporaryOverage -> BudgetResolution.TemporaryOverage(overagePoints, durationHours)
+}
+
 @Composable
 private fun ArchiveLinkCard(
     link: Link,
@@ -171,13 +183,12 @@ private fun ArchiveLinkCard(
             ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     FluxBadge(text = "0.25 pt", variant = FluxBadgeVariant.Data)
-                    FluxBadge(text = link.intent.name, variant = FluxBadgeVariant.Muted)
                     FluxBadge(text = "Originally P${link.priority.value}", variant = FluxBadgeVariant.Muted)
                 }
                 FluxButton(
                     text = "Delete (Releases 0.25pt)",
                     onClick = onDelete,
-                    variant = FluxButtonVariant.Ghost,
+                    variant = FluxButtonVariant.Outlined,
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 2.dp)
                 )
             }
@@ -225,7 +236,7 @@ private fun ArchiveLinkCard(
                 FluxButton(
                     text = "Open Link",
                     onClick = onOpen,
-                    variant = FluxButtonVariant.Secondary,
+                    variant = FluxButtonVariant.Outlined,
                     modifier = Modifier.padding(end = 8.dp)
                 )
                 FluxButton(

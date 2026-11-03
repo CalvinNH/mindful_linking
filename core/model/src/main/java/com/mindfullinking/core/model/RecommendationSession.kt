@@ -8,7 +8,6 @@ import java.time.Instant
 data class RecommendationSession(
     val id: String,
     val availableMinutes: Int,
-    val intentFilter: IntentCategory? = null,
     val startedAt: Instant = Instant.now(),
     val recommendedLinkIds: List<String> = emptyList()
 )

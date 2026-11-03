@@ -1,7 +1,6 @@
 package com.mindfullinking.core.domain
 
 import com.mindfullinking.core.model.DeadlineSubgroup
-import com.mindfullinking.core.model.IntentCategory
 import com.mindfullinking.core.model.Link
 import com.mindfullinking.core.model.LinkStatus
 import com.mindfullinking.core.model.Priority
@@ -69,7 +68,6 @@ object RecommendationEngine {
     fun recommend(
         activeLinks: List<Link>,
         availableMinutes: Int,
-        @Suppress("UNUSED_PARAMETER") intentFilter: IntentCategory? = null,
         lastSessionRecommendedLinkIds: List<String> = emptyList(),
         previousSessionRecommendedLinkIds: List<String> = emptyList(),
         now: Instant = Instant.now(),
@@ -87,7 +85,7 @@ object RecommendationEngine {
 
         // Step 2: Duration fit eligibility (or 24h imminent deadline override)
         val durationEligible = activeNonSnoozed.filter { link ->
-            val isImminent = isDueWithin24Hours(link, now)
+            val isImminent = isDueWithin24Hours(link, now, zoneId)
             link.estimatedDurationMinutes <= availableMinutes || isImminent
         }
 
@@ -120,7 +118,7 @@ object RecommendationEngine {
         val totalCandidatesCount = durationEligible.size
         val candidatesAfterExclusion = durationEligible.filter { link ->
             val shownLastSession = lastSessionRecommendedLinkIds.contains(link.id)
-            val isImminent = isDueWithin24Hours(link, now)
+            val isImminent = isDueWithin24Hours(link, now, zoneId)
 
             // Bypass exclusion if imminent deadline (<=24h) or total eligible candidates < 3
             if (!shownLastSession || isImminent || totalCandidatesCount < 3) {
@@ -213,8 +211,8 @@ object RecommendationEngine {
         )
     }
 
-    private fun isDueWithin24Hours(link: Link, now: Instant): Boolean {
-        val deadline = link.deadlineAt ?: return false
+    private fun isDueWithin24Hours(link: Link, now: Instant, zoneId: ZoneId): Boolean {
+        val deadline = link.deadlineInstantIn(zoneId) ?: return false
         if (deadline.isBefore(now)) return true
         val hoursRemaining = ChronoUnit.MILLIS.between(now, deadline) / 3600000.0
         return hoursRemaining <= 24.0
@@ -244,11 +242,12 @@ object RecommendationEngine {
         // Deadline urgency score
         val isImminent: Boolean
         val deadlineScore: Double
-        if (link.deadlineAt == null) {
+        val deadline = link.deadlineInstantIn(zoneId)
+        if (deadline == null) {
             deadlineScore = 0.00
             isImminent = false
         } else {
-            val millisRemaining = ChronoUnit.MILLIS.between(now, link.deadlineAt)
+            val millisRemaining = ChronoUnit.MILLIS.between(now, deadline)
             val hoursRemaining = millisRemaining / 3600000.0
             isImminent = hoursRemaining <= 24.0
 

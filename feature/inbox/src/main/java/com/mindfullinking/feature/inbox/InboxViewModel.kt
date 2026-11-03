@@ -3,6 +3,8 @@ package com.mindfullinking.feature.inbox
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.mindfullinking.core.database.BudgetMutationResult
+import com.mindfullinking.core.database.BudgetMutationStore
 import com.mindfullinking.core.database.LinkEventEntity
 import com.mindfullinking.core.database.LinkLedgerDatabase
 import com.mindfullinking.core.database.toDomainModel
@@ -17,6 +19,7 @@ import com.mindfullinking.core.model.LinkStatus
 import com.mindfullinking.core.model.Priority
 import com.mindfullinking.core.model.ResolutionReason
 import com.mindfullinking.core.notifications.NotificationScheduler
+import com.mindfullinking.core.notifications.applyBudgetNotificationEffects
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -41,9 +44,13 @@ data class InboxUiState(
 class InboxViewModel(application: Application) : AndroidViewModel(application) {
 
     private val db = LinkLedgerDatabase.getInstance(application)
+    private val budgetMutationStore = BudgetMutationStore(db)
 
     private val _uiState = MutableStateFlow(InboxUiState())
     val uiState: StateFlow<InboxUiState> = _uiState.asStateFlow()
+
+    private val _mutationFeedback = MutableStateFlow<String?>(null)
+    val mutationFeedback: StateFlow<String?> = _mutationFeedback.asStateFlow()
 
     init {
         observeInboxData()
@@ -85,18 +92,28 @@ class InboxViewModel(application: Application) : AndroidViewModel(application) {
 
     fun updateLinkPriority(link: Link, newPriority: Priority) {
         viewModelScope.launch(Dispatchers.IO) {
-            val linkDao = db.linkDao()
-            val updated = link.copy(priority = newPriority, updatedAt = Instant.now())
-            linkDao.upsertLink(updated.toEntity())
+            val result = budgetMutationStore.updateActiveLinkPriority(link.id, newPriority)
+            if (result is BudgetMutationResult.Success) {
+                applyBudgetNotificationEffects(getApplication(), result.notificationEffects)
+            } else {
+                _mutationFeedback.value = result.userMessage()
+            }
         }
     }
 
     fun updateLinkDuration(link: Link, newDurationMinutes: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            val linkDao = db.linkDao()
-            val updated = link.copy(estimatedDurationMinutes = newDurationMinutes, updatedAt = Instant.now())
-            linkDao.upsertLink(updated.toEntity())
+            val result = budgetMutationStore.updateActiveLinkDuration(link.id, newDurationMinutes)
+            if (result is BudgetMutationResult.Success) {
+                applyBudgetNotificationEffects(getApplication(), result.notificationEffects)
+            } else {
+                _mutationFeedback.value = result.userMessage()
+            }
         }
+    }
+
+    fun consumeMutationFeedback() {
+        _mutationFeedback.value = null
     }
 
     fun snoozeLink(link: Link, days: Long) {
@@ -190,5 +207,15 @@ class InboxViewModel(application: Application) : AndroidViewModel(application) {
 
             NotificationScheduler.cancelDeadlineNotification(getApplication(), link.id)
         }
+    }
+
+    private fun BudgetMutationResult.userMessage(): String = when (this) {
+        BudgetMutationResult.BudgetExceeded -> "Priority change would exceed your attention budget."
+        BudgetMutationResult.InvalidDuration -> "Choose one of the supported duration options."
+        BudgetMutationResult.LinkNotFound -> "The selected link no longer exists."
+        BudgetMutationResult.LinkIsNotActive,
+        BudgetMutationResult.LinkIsNotArchived -> "That link changed before the update could be saved."
+        BudgetMutationResult.InvalidResolution -> "That update is no longer valid."
+        is BudgetMutationResult.Success -> error("Success has no feedback message")
     }
 }

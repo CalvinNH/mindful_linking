@@ -7,8 +7,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import com.mindfullinking.core.ui.theme.FluxPalette
 import com.mindfullinking.core.ui.theme.FluxTheme
 
 /**
@@ -23,8 +21,8 @@ fun FluxStat(
     isOnDark: Boolean = false,
     accentColor: Color? = null
 ) {
-    val labelColor = if (isOnDark) FluxPalette.Paper.copy(alpha = 0.7f) else FluxPalette.CharcoalMuted
-    val valueColor = accentColor ?: (if (isOnDark) FluxPalette.Paper else FluxPalette.Void)
+    val labelColor = if (isOnDark) FluxTheme.colors.contentOnInverted.copy(alpha = 0.7f) else FluxTheme.colors.contentSecondary
+    val valueColor = accentColor ?: (if (isOnDark) FluxTheme.colors.contentOnInverted else FluxTheme.colors.contentPrimary)
 
     Column(modifier = modifier) {
         Text(
@@ -32,7 +30,7 @@ fun FluxStat(
             style = FluxTheme.typography.labelSmall,
             color = labelColor
         )
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(FluxTheme.spacing.xs))
         Text(
             text = if (unit != null) "$value $unit" else value,
             style = FluxTheme.typography.metricLarge,

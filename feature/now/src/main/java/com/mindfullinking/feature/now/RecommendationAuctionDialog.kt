@@ -103,7 +103,7 @@ fun formatDurationLabel(minutes: Int): String {
  * State 3 (ML Auction Animation): ~2-second vertical link-shuffling animation simulating background ML candidate analysis
  * displaying candidate titles rapidly flowing up/down with a charcoal/lime progress beam.
  * State 4 (Results Presentation): Displays top 3 recommended link cards scored by RecommendationEngine
- * with PRD 9.6 explanation badges, Open CTA, Resolve, Snooze, Archive actions. Disables "Skip" CTA on 5-skip reconsidered cards.
+ * with PRD 9.6 explanation badges, Open CTA, Resolve, Snooze, and Archive actions.
  * Includes "Exceeds available time" shortest link fallback state.
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -115,7 +115,7 @@ fun RecommendationAuctionDialog(
     onResolveLink: (Link, ResolutionReason) -> Unit,
     onSnoozeLink: (Link, Instant) -> Unit,
     onArchiveLink: (Link) -> Unit,
-    onSkipLink: (Link) -> Unit,
+    onAuctionCompleted: (availableMinutes: Int, recommendedLinkIds: List<String>) -> Unit,
     modifier: Modifier = Modifier,
     lastSessionRecommendedLinkIds: List<String> = emptyList(),
     previousSessionRecommendedLinkIds: List<String> = emptyList(),
@@ -124,6 +124,12 @@ fun RecommendationAuctionDialog(
     var selectedMinutes by remember { mutableIntStateOf(initialAvailableMinutes) }
     var currentPhase by remember { mutableStateOf(AuctionPhase.TIME_SELECTION) }
     var recommendationResult by remember { mutableStateOf<RecommendationResult?>(null) }
+    var currentLastSessionIds by remember(lastSessionRecommendedLinkIds) {
+        mutableStateOf(lastSessionRecommendedLinkIds)
+    }
+    var currentPreviousSessionIds by remember(previousSessionRecommendedLinkIds) {
+        mutableStateOf(previousSessionRecommendedLinkIds)
+    }
 
     // Sub-dialog states for Resolve and Snooze pickers
     var linkToResolve by remember { mutableStateOf<Link?>(null) }
@@ -206,12 +212,15 @@ fun RecommendationAuctionDialog(
                                     val result = RecommendationEngine.recommend(
                                         activeLinks = activeLinks,
                                         availableMinutes = selectedMinutes,
-                                        intentFilter = null,
-                                        lastSessionRecommendedLinkIds = lastSessionRecommendedLinkIds,
-                                        previousSessionRecommendedLinkIds = previousSessionRecommendedLinkIds,
+                                        lastSessionRecommendedLinkIds = currentLastSessionIds,
+                                        previousSessionRecommendedLinkIds = currentPreviousSessionIds,
                                         now = Instant.now()
                                     )
                                     recommendationResult = result
+                                    val recommendedIds = result.recommendations.map { it.link.id }
+                                    currentPreviousSessionIds = currentLastSessionIds
+                                    currentLastSessionIds = recommendedIds
+                                    onAuctionCompleted(selectedMinutes, recommendedIds)
                                     currentPhase = AuctionPhase.RESULTS
                                 }
                             )
@@ -221,9 +230,8 @@ fun RecommendationAuctionDialog(
                             val result = recommendationResult ?: RecommendationEngine.recommend(
                                 activeLinks = activeLinks,
                                 availableMinutes = selectedMinutes,
-                                intentFilter = null,
-                                lastSessionRecommendedLinkIds = lastSessionRecommendedLinkIds,
-                                previousSessionRecommendedLinkIds = previousSessionRecommendedLinkIds,
+                                lastSessionRecommendedLinkIds = currentLastSessionIds,
+                                previousSessionRecommendedLinkIds = currentPreviousSessionIds,
                                 now = Instant.now()
                             )
 
@@ -234,7 +242,6 @@ fun RecommendationAuctionDialog(
                                 onResolveClick = { linkToResolve = it },
                                 onSnoozeClick = { linkToSnooze = it },
                                 onArchiveLink = onArchiveLink,
-                                onSkipLink = onSkipLink,
                                 onReRunAuction = {
                                     currentPhase = AuctionPhase.TIME_SELECTION
                                 }
@@ -605,7 +612,7 @@ private fun CandidateTickerCard(
 /**
  * State 4: Results Presentation.
  * Displays top 3 recommended link cards scored by RecommendationEngine with PRD 9.6 explanation badges,
- * Open CTA, Resolve, Snooze, and Archive actions. Disables "Skip" CTA on 5-skip reconsidered cards.
+ * Open CTA, Resolve, Snooze, and Archive actions.
  * Includes "Exceeds available time" shortest link fallback state.
  */
 @Composable
@@ -616,7 +623,6 @@ private fun ResultsPresentationContent(
     onResolveClick: (Link) -> Unit,
     onSnoozeClick: (Link) -> Unit,
     onArchiveLink: (Link) -> Unit,
-    onSkipLink: (Link) -> Unit,
     onReRunAuction: () -> Unit
 ) {
     Column {
@@ -695,8 +701,7 @@ private fun ResultsPresentationContent(
                         onOpen = { onOpenLink(rec.link) },
                         onResolve = { onResolveClick(rec.link) },
                         onSnooze = { onSnoozeClick(rec.link) },
-                        onArchive = { onArchiveLink(rec.link) },
-                        onSkip = { onSkipLink(rec.link) }
+                        onArchive = { onArchiveLink(rec.link) }
                     )
                 }
             }
@@ -714,8 +719,7 @@ private fun AuctionRecommendationCard(
     onOpen: () -> Unit,
     onResolve: () -> Unit,
     onSnooze: () -> Unit,
-    onArchive: () -> Unit,
-    onSkip: () -> Unit
+    onArchive: () -> Unit
 ) {
     val link = recommendation.link
     val is5SkipReconsidered = link.skipCount >= 5
@@ -793,7 +797,7 @@ private fun AuctionRecommendationCard(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // Action CTAs Row (Open CTA, Resolve, Snooze, Archive, Skip)
+            // Action CTAs Row (Open CTA, Resolve, Snooze, Archive)
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -811,7 +815,7 @@ private fun AuctionRecommendationCard(
                 FluxButton(
                     text = "Resolve",
                     onClick = onResolve,
-                    variant = FluxButtonVariant.Secondary,
+                    variant = FluxButtonVariant.Outlined,
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
                 )
 
@@ -827,17 +831,8 @@ private fun AuctionRecommendationCard(
                 FluxButton(
                     text = "Archive",
                     onClick = onArchive,
-                    variant = FluxButtonVariant.Ghost,
-                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 8.dp)
-                )
-
-                // Skip CTA — DISABLED on 5-skip reconsidered cards
-                FluxButton(
-                    text = "Skip",
-                    onClick = onSkip,
-                    enabled = !is5SkipReconsidered,
                     variant = FluxButtonVariant.Outlined,
-                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 8.dp)
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
                 )
             }
         }

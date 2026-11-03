@@ -10,6 +10,12 @@ import java.time.ZonedDateTime
 class NotificationSchedulerTest {
 
     @Test
+    fun channelAliases_matchTheChannelsUsedByNotificationWorkers() {
+        assertEquals(NotificationChannels.DEADLINE_CHANNEL_ID, NotificationScheduler.DEADLINE_CHANNEL_ID)
+        assertEquals(NotificationChannels.OVERAGE_CHANNEL_ID, NotificationScheduler.OVERAGE_CHANNEL_ID)
+    }
+
+    @Test
     fun calculateDeadlineInstant_whenHasTime_returnsExactInstant() {
         val exactInstant = Instant.parse("2026-08-15T14:30:00Z")
         val result = NotificationScheduler.calculateDeadlineInstant(
@@ -62,5 +68,23 @@ class NotificationSchedulerTest {
         // 2026-08-15 23:59:59 in Tokyo is 2026-08-15 14:59:59 UTC
         assertEquals(Instant.parse("2026-08-16T03:59:59Z"), nyResult)
         assertEquals(Instant.parse("2026-08-15T14:59:59Z"), tokyoResult)
+    }
+
+    @Test
+    fun calculateDeadlineInstant_dateOnlyKeepsCalendarDayAcrossKolkataToNewYork() {
+        val kolkata = ZoneId.of("Asia/Kolkata")
+        val newYork = ZoneId.of("America/New_York")
+        val selectedDate = LocalDate.of(2026, 8, 25)
+        val instantStoredByOlderVersions = selectedDate.atStartOfDay(kolkata).toInstant()
+
+        val result = NotificationScheduler.calculateDeadlineInstant(
+            deadlineAt = instantStoredByOlderVersions,
+            deadlineHasTime = false,
+            deadlineDateOnly = selectedDate,
+            zoneId = newYork
+        )
+
+        assertEquals(Instant.parse("2026-08-26T03:59:59Z"), result)
+        assertEquals(selectedDate, result.atZone(newYork).toLocalDate())
     }
 }

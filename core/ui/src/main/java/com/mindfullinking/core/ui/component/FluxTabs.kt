@@ -2,7 +2,7 @@ package com.mindfullinking.core.ui.component
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
@@ -15,8 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import com.mindfullinking.core.ui.theme.FluxPalette
+import androidx.compose.ui.semantics.Role
 import com.mindfullinking.core.ui.theme.FluxTheme
 
 /**
@@ -29,25 +28,25 @@ fun FluxTabs(
     selectedIndex: Int,
     onTabSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    containerColor: Color = FluxPalette.Surface
+    containerColor: Color = FluxTheme.colors.background
 ) {
     Box(
         modifier = modifier
             .fillMaxWidth()
             .clip(FluxTheme.shapes.pill)
             .background(containerColor)
-            .padding(4.dp)
+            .padding(FluxTheme.spacing.xs)
     ) {
         Row(modifier = Modifier.fillMaxWidth()) {
             tabs.forEachIndexed { index, title ->
                 val isSelected = index == selectedIndex
                 val backgroundColor by animateColorAsState(
-                    targetValue = if (isSelected) FluxPalette.Signal else Color.Transparent,
+                    targetValue = if (isSelected) FluxTheme.colors.accentAction else Color.Transparent,
                     animationSpec = FluxTheme.motion.baseSpec(),
                     label = "tabBackgroundAnimation"
                 )
                 val textColor by animateColorAsState(
-                    targetValue = if (isSelected) FluxPalette.Void else FluxPalette.CharcoalMuted,
+                    targetValue = if (isSelected) FluxTheme.colors.contentOnAction else FluxTheme.colors.contentSecondary,
                     animationSpec = FluxTheme.motion.baseSpec(),
                     label = "tabTextAnimation"
                 )
@@ -55,11 +54,15 @@ fun FluxTabs(
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .defaultMinSize(minHeight = 40.dp)
+                        .defaultMinSize(minHeight = FluxTheme.spacing.touchTargetMin)
                         .clip(FluxTheme.shapes.pill)
                         .background(backgroundColor)
-                        .clickable { onTabSelected(index) }
-                        .padding(vertical = 8.dp, horizontal = 12.dp),
+                        .selectable(
+                            selected = isSelected,
+                            role = Role.Tab,
+                            onClick = { onTabSelected(index) }
+                        )
+                        .padding(vertical = FluxTheme.spacing.sm, horizontal = FluxTheme.spacing.md),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(

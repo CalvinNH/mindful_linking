@@ -2,7 +2,6 @@ package com.mindfullinking.domain.inbox
 
 import com.mindfullinking.core.domain.InboxGroupingEngine
 import com.mindfullinking.core.model.DeadlineSubgroup
-import com.mindfullinking.core.model.IntentCategory
 import com.mindfullinking.core.model.Link
 import com.mindfullinking.core.model.LinkStatus
 import com.mindfullinking.core.model.Priority
@@ -32,7 +31,6 @@ class InboxGroupingEngineTest {
             displayUrl = "https://example.com/$id",
             priority = priority,
             estimatedDurationMinutes = 10,
-            intent = IntentCategory.READ,
             deadlineAt = deadlineAt,
             savedAt = savedAt,
             updatedAt = updatedAt,

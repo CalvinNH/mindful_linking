@@ -44,23 +44,6 @@ enum class DurationOption(val minutes: Int) {
 }
 
 /**
- * User intent categories for a saved link.
- */
-enum class IntentCategory {
-    READ,
-    WATCH,
-    ACT,
-    REFERENCE,
-    OTHER;
-
-    companion object {
-        fun fromString(value: String): IntentCategory {
-            return runCatching { valueOf(value.uppercase()) }.getOrDefault(OTHER)
-        }
-    }
-}
-
-/**
  * Lifecycle status of a link in Link Ledger.
  */
 enum class LinkStatus {
@@ -144,6 +127,7 @@ enum class CreatedFrom {
  */
 enum class LinkEventType {
     SAVE,
+    PRIORITY_CHANGED,
     ARCHIVE,
     RESOLVE,
     RESTORE,

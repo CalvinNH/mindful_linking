@@ -4,7 +4,6 @@ import com.mindfullinking.core.domain.BudgetAction
 import com.mindfullinking.core.domain.BudgetEngine
 import com.mindfullinking.core.model.BudgetState
 import com.mindfullinking.core.model.CreatedFrom
-import com.mindfullinking.core.model.IntentCategory
 import com.mindfullinking.core.model.Link
 import com.mindfullinking.core.model.LinkStatus
 import com.mindfullinking.core.model.MetadataFetchStatus
@@ -29,7 +28,6 @@ class BudgetEngineTest {
             displayUrl = "https://example.com/$id",
             priority = priority,
             estimatedDurationMinutes = 10,
-            intent = IntentCategory.READ,
             status = status,
             savedAt = Instant.now()
         )

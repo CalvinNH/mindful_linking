@@ -5,11 +5,11 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.WorkManager
+import androidx.room.withTransaction
 import com.mindfullinking.core.database.LinkLedgerDatabase
-import com.mindfullinking.core.database.toDomainModel
 import com.mindfullinking.core.datastore.UserPreferencesRepository
 import com.mindfullinking.core.model.LinkEventType
+import com.mindfullinking.core.notifications.NotificationScheduler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,9 +18,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.json.JSONArray
-import org.json.JSONObject
-import java.io.OutputStreamWriter
 
 data class EventCounts(
     val saveCount: Int = 0,
@@ -95,80 +92,83 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    fun exportEncryptedBackup(uri: Uri, context: Context, onComplete: (Boolean, String) -> Unit) {
+    fun exportEncryptedBackup(uri: Uri, context: Context, passphrase: CharArray, onComplete: (Boolean, String) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val linkDao = db.linkDao()
-                val budgetDao = db.budgetDao()
-                val eventDao = db.linkEventDao()
-
-                val links = linkDao.getAllLinks().map { it.toDomainModel() }
-                val budgetState = budgetDao.getBudgetState()?.toDomainModel()
-                val events = eventDao.getAllEvents()
-
-                val rootJson = JSONObject().apply {
-                    put("version", 1)
-                    put("exportedAt", System.currentTimeMillis())
-                    
-                    val linksArray = JSONArray()
-                    links.forEach { link ->
-                        linksArray.put(JSONObject().apply {
-                            put("id", link.id)
-                            put("canonicalUrl", link.canonicalUrl)
-                            put("displayUrl", link.displayUrl)
-                            put("title", link.title)
-                            put("note", link.note)
-                            put("priority", link.priority.value)
-                            put("estimatedDurationMinutes", link.estimatedDurationMinutes)
-                            put("intent", link.intent.name)
-                            put("status", link.status.name)
-                            put("savedAt", link.savedAt.toEpochMilli())
-                        })
-                    }
-                    put("links", linksArray)
-
-                    if (budgetState != null) {
-                        put("budgetState", JSONObject().apply {
-                            put("standardBudgetCents", budgetState.standardBudgetCents)
-                            put("temporaryOverageCents", budgetState.temporaryOverageCents)
-                        })
-                    }
-
-                    put("eventCount", events.size)
+                val snapshot = db.withTransaction {
+                    BackupSnapshot(
+                        exportedAtEpochMs = System.currentTimeMillis(),
+                        links = db.linkDao().getAllLinks(),
+                        budgetState = db.budgetDao().getBudgetState(),
+                        events = db.linkEventDao().getAllEvents(),
+                        sessions = db.recommendationSessionDao().getAllSessions()
+                    )
                 }
+                val encryptedBackup = EncryptedBackupCodec.encrypt(
+                    snapshot,
+                    passphrase
+                )
 
                 context.contentResolver.openOutputStream(uri)?.use { outputStream ->
-                    OutputStreamWriter(outputStream).use { writer ->
-                        writer.write(rootJson.toString(2))
-                    }
-                }
+                    outputStream.write(encryptedBackup)
+                } ?: error("Unable to open the selected export location.")
 
                 withContext(Dispatchers.Main) {
-                    onComplete(true, "Database snapshot successfully exported.")
+                    onComplete(true, "Encrypted backup exported. Keep its passphrase safe.")
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     onComplete(false, "Export failed: ${e.localizedMessage}")
                 }
+            } finally {
+                passphrase.fill('\u0000')
             }
         }
     }
 
     fun performPermanentDataWipe(onComplete: () -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
-            val linkDao = db.linkDao()
-            val budgetDao = db.budgetDao()
-            val eventDao = db.linkEventDao()
-
-            linkDao.deleteAllLinks()
-            budgetDao.resetBudgetState()
-            eventDao.deleteAllEvents()
-            prefsRepository.clearAllPreferences()
-
-            WorkManager.getInstance(getApplication()).cancelAllWork()
+            val linkIds = db.linkDao().getAllLinks().map { it.id }
+            DataWipeExecutor(
+                clearPersistedData = { db.clearAllUserData() },
+                cancelNotifications = {
+                    NotificationScheduler.cancelAllForDataWipe(getApplication(), linkIds)
+                },
+                clearPreferences = { prefsRepository.clearAllPreferences() }
+            ).wipe()
 
             withContext(Dispatchers.Main) {
                 onComplete()
+            }
+        }
+    }
+
+    fun restoreEncryptedBackup(uri: Uri, context: Context, passphrase: CharArray, onComplete: (Boolean, String) -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val container = context.contentResolver.openInputStream(uri)?.use(EncryptedBackupCodec::readContainer)
+                    ?: error("Unable to open the selected backup.")
+                ValidatedBackupRestorer { snapshot ->
+                    // Only after decryption and validation are successful do we replace local data.
+                    val priorLinkIds = db.linkDao().getAllLinks().map { it.id }
+                    db.replaceAllUserData(snapshot.links, snapshot.budgetState, snapshot.events, snapshot.sessions)
+
+                    // Side effects occur only after Room commits. A failed restore leaves old alarms intact.
+                    NotificationScheduler.cancelAllForDataWipe(getApplication(), priorLinkIds)
+                    snapshot.restoredReminderPlan().let { plan ->
+                        plan.deadlineLinks.forEach {
+                            NotificationScheduler.scheduleDeadlineNotification(getApplication(), it)
+                        }
+                        plan.overageExpiresAt?.let {
+                            NotificationScheduler.scheduleOverageExpiryReminder(getApplication(), it)
+                        }
+                    }
+                }.restore(container, passphrase)
+                withContext(Dispatchers.Main) { onComplete(true, "Encrypted backup restored.") }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) { onComplete(false, "Restore failed: ${e.localizedMessage}") }
+            } finally {
+                passphrase.fill('\u0000')
             }
         }
     }

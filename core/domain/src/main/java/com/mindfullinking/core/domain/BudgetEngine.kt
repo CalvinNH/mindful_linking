@@ -32,6 +32,15 @@ object BudgetEngine {
 
     const val STANDARD_BUDGET_CENTS: Int = BudgetState.STANDARD_BUDGET_CENTS // 10,000 cents
     const val ARCHIVED_LINK_COST_CENTS: Int = BudgetState.ARCHIVED_LINK_COST_CENTS // 25 cents
+    val ALLOWED_OVERAGE_DURATION_HOURS: Set<Long> = setOf(24L, 7L * 24L, 30L * 24L)
+
+    /**
+     * Intake and quick-edit controls use a fixed duration set. Keep the
+     * validation at the mutation boundary as well so malformed or stale UI
+     * input can never be persisted.
+     */
+    fun isValidEstimatedDurationMinutes(minutes: Int): Boolean =
+        minutes in Link.VALID_DURATION_MINUTES
 
     /**
      * Computes the total used budget in cents across all active links and retained archived links.
@@ -136,7 +145,9 @@ object BudgetEngine {
         now: Instant = Instant.now()
     ): BudgetState {
         require(overagePoints in 1..50) { "Overage points must be between 1 and 50 points" }
-        require(durationHours > 0) { "Duration must be greater than 0 hours" }
+        require(durationHours in ALLOWED_OVERAGE_DURATION_HOURS) {
+            "Overage duration must be 24 hours, 7 days, or 30 days"
+        }
 
         val overageCents = overagePoints * 100
         val expiresAt = now.plus(durationHours, ChronoUnit.HOURS)

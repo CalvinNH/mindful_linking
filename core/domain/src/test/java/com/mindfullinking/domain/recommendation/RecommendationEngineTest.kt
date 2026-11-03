@@ -1,10 +1,10 @@
 package com.mindfullinking.domain.recommendation
 
 import com.mindfullinking.core.domain.RecommendationEngine
-import com.mindfullinking.core.model.IntentCategory
 import com.mindfullinking.core.model.Link
 import com.mindfullinking.core.model.LinkStatus
 import com.mindfullinking.core.model.Priority
+import com.mindfullinking.core.model.RecommendationSessionHistory
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -25,7 +25,6 @@ class RecommendationEngineTest {
         deadlineAt: Instant? = null,
         skipCount: Int = 0,
         savedAt: Instant = now.minus(5, ChronoUnit.DAYS),
-        intent: IntentCategory = IntentCategory.READ,
         status: LinkStatus = LinkStatus.ACTIVE
     ): Link {
         return Link(
@@ -34,7 +33,6 @@ class RecommendationEngineTest {
             displayUrl = "https://example.com/$id",
             priority = priority,
             estimatedDurationMinutes = duration,
-            intent = intent,
             deadlineAt = deadlineAt,
             savedAt = savedAt,
             skipCount = skipCount,
@@ -196,24 +194,44 @@ class RecommendationEngineTest {
     }
 
     @Test
-    fun testIntentCategoryFilterRemoved() {
-        val readLink = createLink(id = "read", intent = IntentCategory.READ, priority = Priority.HIGH)
-        val watchLink = createLink(id = "watch", intent = IntentCategory.WATCH, priority = Priority.MEDIUM)
-        val actLink = createLink(id = "act", intent = IntentCategory.ACT, priority = Priority.LOW)
-
-        // Request recommendations with WATCH intent filter
+    fun testRecommendationsAreIntentFree() {
         val result = RecommendationEngine.recommend(
-            activeLinks = listOf(readLink, watchLink, actLink),
+            activeLinks = listOf(createLink("read"), createLink("watch"), createLink("act")),
             availableMinutes = 15,
-            intentFilter = IntentCategory.WATCH,
             now = now,
             zoneId = zoneId
         )
 
-        // Intent filter should be ignored and all eligible links returned
         assertEquals(3, result.recommendations.size)
-        assertTrue(result.recommendations.any { it.link.id == "read" })
-        assertTrue(result.recommendations.any { it.link.id == "watch" })
-        assertTrue(result.recommendations.any { it.link.id == "act" })
+    }
+
+    @Test
+    fun immediateSubsequentAuctionUsesCompletedHistoryBeforePersistenceRefresh() {
+        val links = listOf(
+            createLink("one", priority = Priority.HIGHEST, duration = 3),
+            createLink("two", priority = Priority.HIGH, duration = 3),
+            createLink("three", priority = Priority.MEDIUM, duration = 3),
+            createLink("four", priority = Priority.LOW, duration = 3)
+        )
+        val firstAuction = RecommendationEngine.recommend(
+            activeLinks = links,
+            availableMinutes = 3,
+            now = now,
+            zoneId = zoneId
+        )
+        val immediateHistory = RecommendationSessionHistory()
+            .afterCompletedAuction(firstAuction.recommendations.map { it.link.id })
+
+        val secondAuction = RecommendationEngine.recommend(
+            activeLinks = links,
+            availableMinutes = 3,
+            lastSessionRecommendedLinkIds = immediateHistory.lastRecommendedLinkIds,
+            previousSessionRecommendedLinkIds = immediateHistory.previousRecommendedLinkIds,
+            now = now,
+            zoneId = zoneId
+        )
+
+        assertTrue(secondAuction.recommendations.isNotEmpty())
+        assertFalse(secondAuction.recommendations.any { it.link.id in immediateHistory.lastRecommendedLinkIds })
     }
 }

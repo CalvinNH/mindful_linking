@@ -1,0 +1,620 @@
+
+Product Requirements Document: Link Ledger
+1. Product summary
+Link Ledger is an Android-first, local-first link manager for people who want to use their limited future leisure time deliberately.
+It is a finite queue of commitments against future attention, not a conventional bookmark manager. Users share a link into the app, assign it a priority and estimated time commitment, optionally set a deadline, and later ask the app what to do with the time they have available.
+The app enforces a 100-point budget across active and archived links, surfaces the best three links for a selected time window, and reminds users before deadlines.
+2. Goals
+Capture links from Android’s Share sheet with minimal friction.
+Force deliberate prioritization through a finite point budget.
+Recommend useful links for the time currently available.
+Prevent deadline-sensitive links from being forgotten.
+Keep all user content on-device by default.
+Work fully offline for core functions.
+3. Non-goals for version 1
+Accounts, cloud sync, collaboration, or social features.
+Browser extensions, iOS, desktop, or web app support.
+Source-based link categories.
+Full-page capture, web clipping, offline reading, or AI summaries.
+Device-to-device transfer.
+Third-party analytics, advertising, or tracking.
+Public discovery or marketplace features.
+4. Core terminology
+
+Term
+Definition
+Active link
+A link eligible for recommendations and consuming its assigned 1–5 priority points.
+Archived link
+A retained reference link that is excluded from recommendations and consumes 0.25 points.
+Resolved link
+A completed, acted-on, or no-longer-relevant link removed from the active queue.
+Point budget
+The maximum total point usage: 100 by default.
+Priority
+User-assigned importance from 1 to 5.
+Temporary overage
+Explicit, time-limited permission to exceed the 100-point budget.
+Recommendation session
+A “Use a link” interaction in which the user enters available time and receives up to three links.
+Skip
+A “not now” action on a recommended link.
+Snooze
+A deliberate deferral that temporarily removes a link from recommendations.
+5. Assumptions
+Android 10+ is supported.
+Android 13+ notification permission is requested only when deadline reminders are enabled.
+Priority is an integer from 1 to 5.
+Estimated duration options are 5, 10, 15, 20, 30, 45, 60, 90, and 120+ minutes.
+120+ is treated as 120 minutes for recommendation calculations until edited.
+Opening a link does not automatically resolve it.
+No sign-in is required.
+Standard SQLite is used inside Android’s app sandbox.
+Android Auto Backup and device-to-device backup are disabled for app data in version 1.
+The app makes no claim that data is protected against a rooted or compromised device.
+6. Point-budget economics
+6.1 Budget calculation
+used_points =
+  sum(priority for every active link) +
+  (0.25 × archived_link_count)
+available_points = effective_budget - used_points
+The standard effective budget is 100.00 points.
+Examples:
+
+State
+Used points
+Ten active links at priority 5
+50.00
+One active priority-5 link archived
+45.25
+Four archived links
+1.00
+99 active points plus two archived links
+99.50
+6.2 Rationale
+Archiving releases most, but not all, of a link’s active cost. This prevents the archive from becoming an unlimited hidden backlog while preserving useful references.
+A priority-5 active link moved to archive releases 4.75 points. Deleting that archived link permanently releases the remaining 0.25 points.
+6.3 Over-budget flow
+A save or restore is allowed when:
+used_points + incremental_cost <= effective_budget
+Incremental cost:
+Saving an active link: its priority.
+Restoring an archived link: priority - 0.25.
+Moving an active link to archive: 0.25 - priority.
+Deleting an archived link: -0.25.
+If an action exceeds the budget:
+Show the resulting total, for example: 101.25 / 100 points.
+Offer:
+Resolve, archive, or delete existing links.
+Lower the new link’s priority.
+Replace a lower-priority active link.
+Temporarily increase the budget.
+Cancel.
+Temporary overage rules:
+Allowed increases: 5, 10, 20, or custom amount up to 50 points.
+Default expiry: 7 days.
+Available expiry choices: 24 hours, 7 days, or 30 days.
+The app displays active overage status persistently.
+The app sends one reminder before overage expiry.
+Expiry never deletes data.
+After expiry, the user may browse, resolve, archive, and delete, but cannot save or restore links until within budget or a new overage is approved.
+7. User flows
+7.1 Save a shared link
+User taps Share in YouTube, Chrome, LinkedIn, X, Reddit, or another Android app.
+User selects Link Ledger.
+The app receives shared text or URL content.
+The app extracts and validates the URL.
+The app checks for an existing equivalent URL.
+The save screen shows:
+URL or available shared title
+Priority, default 3
+Estimated duration, default 10 minutes
+Optional deadline
+Optional note
+Current point usage
+User taps Save.
+The app saves the link as active if it fits the budget; otherwise, it opens the over-budget flow.
+Acceptance criteria:
+A valid shared URL can be saved offline.
+The save screen requires no mandatory metadata beyond a valid URL; defaults are accepted.
+Invalid shared text has a clear error state.
+Metadata fetching never blocks saving.
+7.2 URL validation and normalization
+A normalized URL is the deterministic internal representation used only for duplicate detection. The original shared URL remains available as the display URL.
+Rules:
+Accept only http and https URLs.
+Reject URLs containing user credentials, such as https://user:password@example.com.
+Parse the URL using a standards-compliant URL parser.
+Lowercase the scheme and host.
+Convert internationalized hostnames to ASCII/Punycode.
+Remove the default port:
+Port 80 for HTTP
+Port 443 for HTTPS
+Preserve:
+Path casing
+Path segments
+Fragments
+Remaining query parameter order
+All query parameters not in the removal allowlist
+Remove only these exact tracking parameters, case-insensitively:
+utm_source
+utm_medium
+utm_campaign
+utm_term
+utm_content
+utm_id
+utm_source_platform
+utm_creative_format
+utm_marketing_tactic
+gclid
+dclid
+gbraid
+wbraid
+msclkid
+fbclid
+igshid
+_ga
+_gl
+Do not remove broad parameters such as ref, source, id, page, q, or si; they may affect destination behavior.
+If removing allowlisted parameters leaves no query parameters, remove the trailing ?.
+Duplicate equivalence is exact equality of normalized URLs.
+Required test cases include:
+https://example.com/a?utm_source=x&x=1
+→ https://example.com/a?x=1
+
+HTTPS://EXAMPLE.COM:443/a
+→ https://example.com/a
+
+https://example.com/a?ref=homepage
+→ unchanged
+
+https://example.com/a#section-2
+→ fragment retained
+
+https://example.com/a?x=1&utm_campaign=test&y=2
+→ https://example.com/a?x=1&y=2
+7.3 Duplicate link flow
+When an equivalent active link exists, show its:
+Priority
+Estimated duration
+Deadline
+Current status
+Offer:
+Open existing link
+Update existing link
+Save another copy
+Cancel
+Default action: update existing link.
+When an equivalent archived link exists:
+Open archived link
+Restore it to active status
+Save another copy
+Cancel
+Restoration follows budget rules.
+7.4 Main navigation and queue hierarchy
+The app has four sections:
+Now
+Inbox
+Archive
+Settings
+The Inbox is grouped in two levels:
+Priority: 5, 4, 3, 2, 1.
+Within each priority: deadline state.
+Deadline subgroups:
+Overdue
+Due today
+Due within 3 days
+Due within 7 days
+Due later
+No deadline
+Within a deadline subgroup, links sort by:
+Earliest deadline, if applicable.
+Oldest saved date.
+Most recent edit date.
+The Inbox does not show or sort by recommendation score. Recommendation scores exist only inside a recommendation session.
+Each active link displays:
+Title or URL fallback
+Priority
+Estimated duration
+Deadline state, if present
+Saved date
+Snooze status, if applicable
+Available actions:
+Edit priority
+Edit duration
+Set or remove deadline
+Snooze
+Resolve
+Archive
+Delete permanently
+7.5 “Use a link” recommendation session
+User opens Now.
+User taps Use a link.
+The app asks, “How much time do you have?”
+User selects 5, 10, 15, 20, 30, 45, 60, 90, or 120+ minutes.
+User may optionally filter by intent:
+Read
+Watch
+Act on
+Reference
+The app ranks eligible links and presents up to three recommendations.
+Each recommendation displays:
+Explanation
+Estimated duration
+Priority
+Deadline state
+Saved date
+User may:
+Open link
+Mark resolved
+Skip
+Snooze
+Edit metadata
+Archive
+Delete
+If no links fit the selected time:
+Show the shortest active links.
+Label them as exceeding available time.
+Offer a direct path to the Inbox.
+7.6 Resolve, archive, and delete
+Resolution actions:
+
+Action
+Result
+Point effect
+Completed
+Removes link from active queue; retains only local event history.
+Releases full priority
+Applied/acted on
+Same as Completed.
+Releases full priority
+No longer relevant
+Same as Completed.
+Releases full priority
+Archive for reference
+Retains full link record in Archive.
+Changes cost to 0.25
+Delete permanently
+Removes link and local content after confirmation.
+Releases all remaining cost
+Archived links:
+Are excluded from recommendations.
+Do not receive deadline notifications.
+Remain searchable locally.
+Can be restored subject to budget rules.
+Can be permanently deleted to release 0.25 points.
+8. Deadline and notification flow
+A deadline may be date-only or date-and-time.
+Date-only deadlines default to 23:59 in the device’s current timezone.
+
+Time remaining
+Notification
+More than 7 days
+Optional weekly reminder
+7 days
+Reminder
+3 days
+Reminder
+1 day
+Reminder
+2 hours
+Reminder when time is specified
+Deadline time
+Final reminder
+Passed
+One expiry notification only
+Rules:
+Pending notifications are cancelled immediately when a link is resolved, archived, or deleted.
+Users can disable reminders globally or per link.
+If notification permission is denied, deadline information remains visible in-app.
+Past deadlines require confirmation and are marked overdue.
+Store deadline instants in UTC; render them in current device timezone.
+Reschedule notifications after reboot and timezone change.
+Use WorkManager for ordinary reminders.
+Use AlarmManager only for exact deadline moments when permitted by the OS and necessary.
+9. Recommendation algorithm
+9.1 Eligibility
+A link is eligible when:
+Status is Active.
+Snooze time has expired or is absent.
+Its duration is less than or equal to available time.
+It matches the selected intent, if the user selected one.
+Intent is a filter, not a score. If no intent is selected, all intents are eligible.
+An imminent-deadline link may appear despite exceeding available time when its deadline is within 24 hours. It must be labelled as exceeding the selected time.
+9.2 Scoring inputs
+
+Signal
+Purpose
+Priority
+Honors importance explicitly set by the user.
+Duration fit
+Prefers links that use the available time well.
+Age
+Stops older links from being buried indefinitely.
+Deadline urgency
+Elevates links as deadlines approach.
+Skip history
+Identifies neglected links while avoiding repeated pressure.
+Recent exposure
+Prevents repeated presentation.
+Priority/deadline grouping
+Maintains consistency with the Inbox hierarchy.
+9.3 Numerical scoring
+For candidate link i:
+priority_score = priority_i / 5
+
+duration_fit_score =
+  max(0, 1 - abs(available_minutes - duration_i) / max(available_minutes, 1))
+
+age_score =
+  min(days_since_saved_i / 30, 1)
+
+deadline_score =
+  deadline_urgency(i)
+
+skip_score =
+  skip_adjustment(i)
+
+exposure_penalty =
+  recent_exposure_penalty(i)
+Deadline urgency:
+No deadline:                 0.00
+More than 14 days remaining: 0.10
+8–14 days remaining:         0.25
+4–7 days remaining:          0.50
+1–3 days remaining:          0.80
+0–24 hours remaining:        1.00
+Past deadline:               1.00
+Skip adjustment:
+0 skips:    0.00
+1–2 skips:  0.05
+3–4 skips:  0.10
+5+ skips:  -0.20 and flag for review
+Recent-exposure penalty:
+Shown in immediately previous session: 1.00
+Shown two sessions ago:                0.50
+Otherwise:                             0.00
+Base score:
+base_score =
+  0.40 × priority_score +
+  0.22 × deadline_score +
+  0.18 × duration_fit_score +
+  0.12 × age_score +
+  0.08 × skip_score -
+  0.20 × exposure_penalty
+9.4 Selection and diversity
+Rank eligible links by base score.
+Select the highest-scoring link.
+Select the next link with a 0.15 penalty if it has the same priority and deadline subgroup as an already selected link.
+Repeat for the third link.
+Do not apply the subgroup penalty if fewer than three distinct priority/deadline subgroups have eligible links.
+Links due within 24 hours override subgroup diversity when necessary.
+9.5 Skip and review behavior
+Skip increments skip_count.
+Snooze does not increment skip_count.
+At five skips, mark the link Reconsider.
+When a reconsidered link is surfaced, require one action:
+Keep
+Lower priority
+Snooze
+Archive
+Delete
+Do not show the same link in consecutive sessions unless:
+It is due within 24 hours; or
+Fewer than three eligible links exist.
+9.6 Recommendation explanations
+No LLM is required.
+The app selects a deterministic explanation template based on the strongest positive scoring factor, using this tie order:
+Deadline urgency
+Priority
+Duration fit
+Age
+Neglect/review status
+Group diversity
+Examples:
+“Deadline is tomorrow.”
+“Priority 5 and fits your 15 minutes.”
+“Fits your available time.”
+“Saved 24 days ago.”
+“You have skipped this several times; decide whether to keep it.”
+“Chosen to vary your current queue.”
+10. Privacy and local-first architecture
+10.1 Privacy rules
+No account is required.
+URLs, titles, notes, deadlines, priorities, and recommendation history stay on-device.
+No ad SDKs, tracking SDKs, or third-party analytics SDKs.
+No server is required for core features.
+Metadata fetching is disabled by default.
+If metadata fetching is enabled, the app directly contacts the destination website; no proxy is used.
+Failed metadata retrieval never blocks saving.
+10.2 Local storage
+Use:
+Kotlin
+Jetpack Compose
+Room over standard SQLite
+DataStore for preferences
+Android Keystore for any locally stored export-encryption key material
+WorkManager and AlarmManager for reminders
+The database relies on Android’s app sandbox and device-level encryption where enabled by the device. It is not application-encrypted.
+Required safeguards:
+Disable Android Auto Backup and device-to-device backup for application data.
+Exclude URLs, notes, and content from logs.
+Do not include user content in crash reports.
+Require confirmation before permanent deletion.
+Provide a local export function only after the user explicitly requests it.
+11. Data model
+Link
+id: UUID
+canonical_url: String
+display_url: String
+title: String?
+note: String?
+priority: Int [1..5]
+estimated_duration_minutes: Int
+intent: Enum [READ, WATCH, ACT, REFERENCE, OTHER]
+deadline_at: Instant?
+deadline_has_time: Boolean
+deadline_notifications_enabled: Boolean
+status: Enum [ACTIVE, ARCHIVED, RESOLVED]
+resolution_reason: Enum?
+saved_at: Instant
+resolved_at: Instant?
+last_opened_at: Instant?
+snoozed_until: Instant?
+skip_count: Int
+last_skipped_at: Instant?
+recommendation_count: Int
+last_recommended_at: Instant?
+created_from: Enum [SHARE, MANUAL]
+metadata_fetch_status: Enum
+updated_at: Instant
+BudgetState
+standard_budget: Decimal = 100.00
+temporary_overage_points: Decimal = 0.00
+temporary_overage_expires_at: Instant?
+last_overage_reminder_at: Instant?
+RecommendationSession
+id: UUID
+available_minutes: Int
+intent_filter: Enum?
+started_at: Instant
+recommended_link_ids: List<UUID>
+LinkEvent
+id: UUID
+link_id: UUID
+event_type: Enum [SAVED, OPENED, SKIPPED, SNOOZED, RESOLVED, ARCHIVED, RESTORED, DELETED, RECOMMENDED]
+occurred_at: Instant
+12. System architecture
+Android Sharesheet
+        |
+Share Receiver Activity
+        |
+URL Validation + Normalization
+        |
+Repository Layer
+   |                   |
+Room / SQLite    Recommendation Engine
+   |
+Notification Scheduler
+   |
+Jetpack Compose UI
+Required modules:
+share: receives ACTION_SEND and supported text-sharing intents.
+domain: URL rules, budget rules, recommendation scoring, resolution logic.
+data: Room entities, DAOs, repositories, migrations.
+notifications: deadline scheduling, cancellation, reboot restoration.
+ui: Compose screens and accessibility.
+privacy: settings, export, deletion, telemetry consent.
+13. Edge cases
+Shared text with multiple URLs: show a picker; default to the first detected URL.
+Shared text without a valid HTTP/HTTPS URL: reject with a clear message.
+URL shorteners: retain the shared URL; do not resolve redirects unless optional metadata fetching is enabled.
+Query parameters not on the exact allowlist remain untouched.
+Deadline updates cancel previous notifications before scheduling new ones.
+Timezone changes update displayed deadline times and scheduled local reminders.
+Device reboot reschedules active deadline notifications.
+Notification permission denial does not remove deadline data.
+Exact notification timing can be delayed by Android battery restrictions.
+Missing destination application falls back to the system browser chooser.
+Inaccessible links remain editable, archivable, resolvable, or deletable.
+An imported-data state is not applicable in version 1.
+Migration failure creates a local recovery copy before migration.
+Permanent deletion has a short Undo window before final removal.
+An empty queue directs users to share or manually add a link.
+14. Privacy-preserving analytics
+Analytics are disabled by default and remain device-local.
+If enabled, record only aggregate counts:
+Active point-usage range
+Saved, resolved, archived, and deleted link counts
+Recommendation sessions started
+Recommendation action counts
+Notification delivery and open counts
+Feature-level crash counts, after explicit consent
+Never record:
+URLs
+Titles
+Notes
+Deadlines
+Intent values
+Individual link histories
+Advertising identifiers
+Raw database content
+Users can view or delete local analytics. Version 1 does not upload analytics.
+15. Acceptance criteria
+Capture and budget
+The app appears in Android’s Share sheet for text/plain.
+Valid HTTP/HTTPS URLs save without network access.
+URL normalization follows the specified rules exactly.
+Each active link consumes its exact priority value.
+Each archived link consumes exactly 0.25 points.
+Budget totals update immediately after save, archive, restore, resolve, priority edit, and deletion.
+Over-budget saves and restores require explicit user approval of an overage.
+Queue and recommendations
+Inbox grouping is priority first, deadline state second.
+Inbox never exposes a persistent recommendation score.
+“Use a link” asks for available time before ranking.
+The session presents no more than three links.
+Priority, duration fit, age, deadline urgency, skip history, exposure, and subgroup diversity influence ranking.
+Intent is applied as eligibility filtering only.
+Snoozed links are excluded until snooze expiry.
+Five skipped recommendations trigger reconsideration.
+Every recommendation uses a deterministic explanation template.
+Deadlines and archive
+Deadline notifications schedule on save and edit.
+Notifications cancel on resolution, archive, and deletion.
+Archive removes a link from recommendations and notification scheduling.
+Restoring archive links recalculates budget correctly.
+Deleting an archived link releases 0.25 points.
+Privacy and reliability
+Core functions work with network access disabled.
+App data is excluded from Android backup.
+No link content is written to logs or analytics.
+Metadata fetching remains off unless explicitly enabled.
+Database migrations are tested against existing records.
+Users can permanently delete local data.
+16. Testing requirements
+Unit tests
+URL parsing, validation, and exact normalization allowlist.
+Preservation of non-allowlisted query parameters.
+Duplicate detection.
+Point calculations including 0.25 archive cost.
+Temporary-overage expiration.
+Recommendation scoring and subgroup diversity.
+Deadline urgency thresholds.
+Skip and reconsideration logic.
+Timezone handling.
+Database migrations.
+Integration tests
+Android Share-sheet intake.
+Save, edit, resolve, archive, restore, and deletion lifecycle.
+Full-budget and over-budget scenarios.
+Reminder creation, update, cancellation, reboot restoration.
+Recommendation sessions using fixed clocks.
+Offline operation with metadata fetching disabled.
+Backup exclusion verification.
+UI and accessibility tests
+TalkBack labels for all metadata and recommendation explanations.
+Minimum touch-target size.
+Dark mode and large-text support.
+Screen rotation and process recreation.
+Notification-permission denial.
+Empty queue, full budget, over budget, overdue deadline, and no-eligible-link states.
+Security tests
+Verify backup exclusion rules.
+Verify logs and crash diagnostics contain no URLs, titles, or notes.
+Verify metadata fetching is disabled by default.
+Run dependency and static security scans before release.
+17. Launch scope
+Version 1 includes:
+Android Share-sheet capture.
+Manual link entry.
+Priority, estimated duration, optional intent, deadline, and note.
+100-point budget with 0.25-point archive cost.
+Temporary overage.
+Priority/deadline Inbox hierarchy.
+Archive, local search, and filters.
+“Use a link” recommendation sessions.
+Deadline notifications.
+Standard local SQLite storage.
+Local-only aggregate analytics, opt-in.
+Local export and permanent deletion controls.

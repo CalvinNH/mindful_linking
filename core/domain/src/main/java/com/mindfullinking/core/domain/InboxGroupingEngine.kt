@@ -49,7 +49,7 @@ object InboxGroupingEngine {
                     .toSortedMap(compareBy { it.displayOrder })
                     .map { (subgroup, subgroupLinks) ->
                         val sortedLinks = subgroupLinks.sortedWith(
-                            compareBy<Link> { it.deadlineAt ?: Instant.MAX }
+                            compareBy<Link> { it.deadlineInstantIn(zoneId) ?: Instant.MAX }
                                 .thenBy { it.savedAt }
                                 .thenByDescending { it.updatedAt }
                         )

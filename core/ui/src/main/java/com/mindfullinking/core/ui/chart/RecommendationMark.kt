@@ -37,7 +37,6 @@ fun RecommendationMark(
     durationMinutes: Int,
     onOpenClick: () -> Unit,
     modifier: Modifier = Modifier,
-    intent: String = "READ",
     onSkipClick: (() -> Unit)? = null,
     isReconsiderFlagged: Boolean = false
 ) {
@@ -67,11 +66,6 @@ fun RecommendationMark(
                         variant = FluxBadgeVariant.Data
                     )
                 }
-
-                FluxBadge(
-                    text = intent.uppercase(),
-                    variant = FluxBadgeVariant.Charcoal
-                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))

@@ -35,7 +35,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mindfullinking.core.domain.ScoredRecommendation
-import com.mindfullinking.core.model.IntentCategory
 import com.mindfullinking.core.ui.chart.BudgetGauge
 import com.mindfullinking.core.ui.component.FluxBadge
 import com.mindfullinking.core.ui.component.FluxBadgeVariant
@@ -157,31 +156,6 @@ fun NowScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Intent Category Filter Chips
-        Text(
-            text = "INTENT FILTER",
-            style = FluxTheme.typography.labelSmall,
-            color = FluxPalette.CharcoalMuted
-        )
-        Spacer(modifier = Modifier.height(6.dp))
-
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            val filters = listOf<IntentCategory?>(null) + IntentCategory.entries
-            filters.forEach { cat ->
-                val isSelected = uiState.selectedIntentFilter == cat
-                val label = cat?.name ?: "ALL"
-                FluxButton(
-                    text = label,
-                    onClick = { viewModel.setIntentFilter(cat) },
-                    variant = if (isSelected) FluxButtonVariant.Data else FluxButtonVariant.Ghost,
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 4.dp)
-                )
-            }
-        }
-
         Spacer(modifier = Modifier.height(24.dp))
 
         // Recommendation Results Carousel / Cards
@@ -232,8 +206,7 @@ fun NowScreen(
                             viewModel.openLink(rec.link)
                             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(rec.link.canonicalUrl))
                             context.startActivity(intent)
-                        },
-                        onSkip = { viewModel.skipLink(rec.link) }
+                        }
                     )
                 }
             }
@@ -257,8 +230,7 @@ fun NowScreen(
                             viewModel.openLink(rec.link)
                             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(rec.link.canonicalUrl))
                             context.startActivity(intent)
-                        },
-                        onSkip = { viewModel.skipLink(rec.link) }
+                        }
                     )
                 }
             }
@@ -286,9 +258,9 @@ fun NowScreen(
             onArchiveLink = { link ->
                 viewModel.archiveLink(link)
             },
-            onSkipLink = { link ->
-                viewModel.skipLink(link)
-            }
+            lastSessionRecommendedLinkIds = uiState.lastSessionRecommendedLinkIds,
+            previousSessionRecommendedLinkIds = uiState.previousSessionRecommendedLinkIds,
+            onAuctionCompleted = viewModel::recordCompletedAuction
         )
     }
 }
@@ -297,7 +269,6 @@ fun NowScreen(
 fun RecommendationCard(
     recommendation: ScoredRecommendation,
     onOpen: () -> Unit,
-    onSkip: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val link = recommendation.link
@@ -370,14 +341,6 @@ fun RecommendationCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                // "Skip" button disabled on 5-skip reconsidered cards
-                FluxButton(
-                    text = "Skip",
-                    onClick = onSkip,
-                    enabled = !is5SkipReconsidered,
-                    variant = FluxButtonVariant.Outlined,
-                    modifier = Modifier.padding(end = 8.dp)
-                )
                 FluxButton(
                     text = "Open Link",
                     onClick = onOpen,

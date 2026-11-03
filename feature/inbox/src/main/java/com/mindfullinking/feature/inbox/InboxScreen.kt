@@ -2,6 +2,7 @@ package com.mindfullinking.feature.inbox
 
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
@@ -64,7 +66,15 @@ fun InboxScreen(
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val mutationFeedback by viewModel.mutationFeedback.collectAsState()
     val context = LocalContext.current
+
+    LaunchedEffect(mutationFeedback) {
+        mutationFeedback?.let { message ->
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+            viewModel.consumeMutationFeedback()
+        }
+    }
 
     // Expanded state maps for 2-level collapsible hierarchy
     val priorityExpandedMap = remember { mutableStateMapOf<Int, Boolean>().apply { put(5, true); put(4, true); put(3, true); put(2, true); put(1, true) } }
@@ -120,7 +130,8 @@ fun InboxScreen(
                             text = "P${p.value}",
                             onClick = { viewModel.updateLinkPriority(target, p) },
                             variant = if (isSelected) FluxButtonVariant.Primary else FluxButtonVariant.Outlined,
-                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                            minWidth = 0.dp,
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 6.dp, vertical = 4.dp)
                         )
                     }
                 }
@@ -339,7 +350,6 @@ private fun InboxLinkCard(
             ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     FluxBadge(text = "${link.estimatedDurationMinutes}m", variant = FluxBadgeVariant.Muted)
-                    FluxBadge(text = link.intent.name, variant = FluxBadgeVariant.Data)
                     if (link.skipCount > 0) {
                         FluxBadge(text = "${link.skipCount} skips", variant = FluxBadgeVariant.Muted)
                     }
@@ -404,7 +414,7 @@ private fun InboxLinkCard(
                 FluxButton(
                     text = "Snooze",
                     onClick = onSnooze,
-                    variant = FluxButtonVariant.Secondary,
+                    variant = FluxButtonVariant.Outlined,
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 4.dp)
                 )
                 FluxButton(
@@ -422,7 +432,7 @@ private fun InboxLinkCard(
                 FluxButton(
                     text = "Delete",
                     onClick = onDelete,
-                    variant = FluxButtonVariant.Ghost,
+                    variant = FluxButtonVariant.Outlined,
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 4.dp)
                 )
             }

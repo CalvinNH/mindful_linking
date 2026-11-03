@@ -2,6 +2,7 @@ package com.mindfullinking.feature.now
 
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,6 +24,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
@@ -65,7 +67,15 @@ fun MainLedgerScreen(
 ) {
     val nowUiState by nowViewModel.uiState.collectAsState()
     val inboxUiState by inboxViewModel.uiState.collectAsState()
+    val mutationFeedback by inboxViewModel.mutationFeedback.collectAsState()
     val context = LocalContext.current
+
+    LaunchedEffect(mutationFeedback) {
+        mutationFeedback?.let { message ->
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+            inboxViewModel.consumeMutationFeedback()
+        }
+    }
 
     var showAuctionDialog by remember { mutableStateOf(false) }
     var resolveTargetLink by remember { mutableStateOf<Link?>(null) }
@@ -96,9 +106,9 @@ fun MainLedgerScreen(
             onArchiveLink = { link ->
                 inboxViewModel.archiveLink(link)
             },
-            onSkipLink = { link ->
-                nowViewModel.skipLink(link)
-            }
+            lastSessionRecommendedLinkIds = nowUiState.lastSessionRecommendedLinkIds,
+            previousSessionRecommendedLinkIds = nowUiState.previousSessionRecommendedLinkIds,
+            onAuctionCompleted = nowViewModel::recordCompletedAuction
         )
     }
 
@@ -150,7 +160,8 @@ fun MainLedgerScreen(
                             text = "P${p.value}",
                             onClick = { inboxViewModel.updateLinkPriority(target, p) },
                             variant = if (isSelected) FluxButtonVariant.Primary else FluxButtonVariant.Outlined,
-                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                            minWidth = 0.dp,
+                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 4.dp)
                         )
                     }
                 }
@@ -488,7 +499,7 @@ private fun LedgerLinkCard(
                 FluxButton(
                     text = "Snooze",
                     onClick = onSnooze,
-                    variant = FluxButtonVariant.Secondary,
+                    variant = FluxButtonVariant.Outlined,
                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
                 )
                 FluxButton(
@@ -506,7 +517,7 @@ private fun LedgerLinkCard(
                 FluxButton(
                     text = "Delete",
                     onClick = onDelete,
-                    variant = FluxButtonVariant.Ghost,
+                    variant = FluxButtonVariant.Outlined,
                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
                 )
             }

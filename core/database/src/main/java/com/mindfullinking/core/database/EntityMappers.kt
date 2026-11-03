@@ -2,7 +2,6 @@ package com.mindfullinking.core.database
 
 import com.mindfullinking.core.model.BudgetState
 import com.mindfullinking.core.model.CreatedFrom
-import com.mindfullinking.core.model.IntentCategory
 import com.mindfullinking.core.model.Link
 import com.mindfullinking.core.model.LinkEvent
 import com.mindfullinking.core.model.LinkEventType
@@ -13,6 +12,7 @@ import com.mindfullinking.core.model.RecommendationSession
 import com.mindfullinking.core.model.ResolutionReason
 import org.json.JSONArray
 import java.time.Instant
+import java.time.LocalDate
 
 fun LinkEntity.toDomainModel(): Link {
     return Link(
@@ -23,8 +23,8 @@ fun LinkEntity.toDomainModel(): Link {
         note = note,
         priority = Priority.fromInt(priority),
         estimatedDurationMinutes = estimatedDurationMinutes,
-        intent = IntentCategory.fromString(intent),
         deadlineAt = deadlineAtEpochMs?.let { Instant.ofEpochMilli(it) },
+        deadlineDateOnly = deadlineDateOnly?.let(LocalDate::parse),
         deadlineHasTime = deadlineHasTime,
         deadlineNotificationsEnabled = deadlineNotificationsEnabled,
         status = LinkStatus.fromString(status),
@@ -52,8 +52,8 @@ fun Link.toEntity(): LinkEntity {
         note = note,
         priority = priority.value,
         estimatedDurationMinutes = estimatedDurationMinutes,
-        intent = intent.name,
         deadlineAtEpochMs = deadlineAt?.toEpochMilli(),
+        deadlineDateOnly = deadlineDateOnly?.toString(),
         deadlineHasTime = deadlineHasTime,
         deadlineNotificationsEnabled = deadlineNotificationsEnabled,
         status = status.name,
@@ -104,7 +104,6 @@ fun RecommendationSessionEntity.toDomainModel(): RecommendationSession {
     return RecommendationSession(
         id = id,
         availableMinutes = availableMinutes,
-        intentFilter = intentFilter?.let { IntentCategory.fromString(it) },
         startedAt = Instant.ofEpochMilli(startedAtEpochMs),
         recommendedLinkIds = linkIds
     )
@@ -116,7 +115,6 @@ fun RecommendationSession.toEntity(): RecommendationSessionEntity {
     return RecommendationSessionEntity(
         id = id,
         availableMinutes = availableMinutes,
-        intentFilter = intentFilter?.name,
         startedAtEpochMs = startedAt.toEpochMilli(),
         recommendedLinkIdsJson = jsonArray.toString()
     )

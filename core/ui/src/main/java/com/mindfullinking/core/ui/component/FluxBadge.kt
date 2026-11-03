@@ -9,8 +9,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import com.mindfullinking.core.ui.theme.FluxPalette
 import com.mindfullinking.core.ui.theme.FluxTheme
 
 enum class FluxBadgeVariant {
@@ -29,23 +27,24 @@ fun FluxBadge(
     modifier: Modifier = Modifier,
     variant: FluxBadgeVariant = FluxBadgeVariant.Action
 ) {
+    val colors = FluxTheme.colors
     val containerColor = when (variant) {
-        FluxBadgeVariant.Action -> FluxPalette.Signal
-        FluxBadgeVariant.Data -> FluxPalette.Lavender
-        FluxBadgeVariant.Charcoal -> FluxPalette.Void
-        FluxBadgeVariant.Muted -> FluxPalette.LavenderMuted
+        FluxBadgeVariant.Action -> colors.accentAction
+        FluxBadgeVariant.Data -> colors.accentData
+        FluxBadgeVariant.Charcoal -> colors.surfaceInverted
+        FluxBadgeVariant.Muted -> colors.accentDataMuted
     }
 
     val contentColor = when (variant) {
-        FluxBadgeVariant.Charcoal -> FluxPalette.Paper
-        else -> FluxPalette.Void
+        FluxBadgeVariant.Charcoal -> colors.contentOnInverted
+        else -> colors.contentPrimary
     }
 
     Box(
         modifier = modifier
             .clip(FluxTheme.shapes.badge)
             .background(containerColor)
-            .padding(horizontal = 10.dp, vertical = 4.dp),
+            .padding(horizontal = FluxTheme.spacing.badgeHorizontalPadding, vertical = FluxTheme.spacing.xs),
         contentAlignment = Alignment.Center
     ) {
         Text(

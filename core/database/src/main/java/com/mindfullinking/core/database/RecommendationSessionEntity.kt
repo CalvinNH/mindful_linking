@@ -8,7 +8,6 @@ import androidx.room.PrimaryKey
 data class RecommendationSessionEntity(
     @PrimaryKey val id: String,
     @ColumnInfo(name = "available_minutes") val availableMinutes: Int,
-    @ColumnInfo(name = "intent_filter") val intentFilter: String?,
     @ColumnInfo(name = "started_at_epoch_ms") val startedAtEpochMs: Long,
     @ColumnInfo(name = "recommended_link_ids_json") val recommendedLinkIdsJson: String
 )

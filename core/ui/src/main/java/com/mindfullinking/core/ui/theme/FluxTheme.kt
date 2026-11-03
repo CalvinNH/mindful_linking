@@ -1,24 +1,38 @@
 package com.mindfullinking.core.ui.theme
 
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.foundation.isSystemInDarkTheme
 
 /**
  * Root Bauhaus design system theme wrapper.
  */
 @Composable
 fun FluxTheme(
-    colors: FluxColors = FluxColors(),
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    colors: FluxColors = if (darkTheme) FluxColors.dark() else FluxColors(),
     typography: FluxTypography = FluxTypography(),
     shapes: FluxShapes = FluxShapes(),
     spacing: FluxSpacing = FluxSpacing(),
     motion: FluxMotion = FluxMotion(),
     content: @Composable () -> Unit
 ) {
-    val materialColorScheme = lightColorScheme(
+    val materialColorScheme = if (darkTheme) darkColorScheme(
+        primary = colors.accentAction,
+        onPrimary = colors.contentOnAction,
+        surface = colors.surface,
+        onSurface = colors.contentPrimary,
+        background = colors.background,
+        onBackground = colors.contentPrimary,
+        secondary = colors.accentData,
+        onSecondary = colors.contentOnData,
+        error = colors.statusDanger,
+        onError = colors.contentPrimary
+    ) else lightColorScheme(
         primary = colors.accentAction,
         onPrimary = colors.contentOnAction,
         surface = colors.surface,

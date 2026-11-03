@@ -2,8 +2,6 @@ package com.mindfullinking.core.notifications
 
 import android.Manifest
 import android.app.AlarmManager
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -18,6 +16,7 @@ import com.mindfullinking.core.model.Link
 import com.mindfullinking.core.model.LinkStatus
 import java.time.Duration
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
@@ -27,8 +26,9 @@ import java.util.concurrent.TimeUnit
  */
 object NotificationScheduler {
 
-    const val DEADLINE_CHANNEL_ID = "deadline_reminders"
-    const val OVERAGE_CHANNEL_ID = "overage_reminders"
+    /** Backwards-compatible aliases for the single notification-channel contract. */
+    const val DEADLINE_CHANNEL_ID = NotificationChannels.DEADLINE_CHANNEL_ID
+    const val OVERAGE_CHANNEL_ID = NotificationChannels.OVERAGE_CHANNEL_ID
 
     private val REMINDER_TYPES = listOf(
         DeadlineWorker.REMINDER_TYPE_7D,
@@ -39,28 +39,7 @@ object NotificationScheduler {
     )
 
     fun ensureChannelsCreated(context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager ?: return
-            
-            val deadlineChannel = NotificationChannel(
-                DEADLINE_CHANNEL_ID,
-                "Deadline Reminders",
-                NotificationManager.IMPORTANCE_DEFAULT
-            ).apply {
-                description = "Notifications for link deadlines"
-            }
-            
-            val overageChannel = NotificationChannel(
-                OVERAGE_CHANNEL_ID,
-                "Attention Budget Reminders",
-                NotificationManager.IMPORTANCE_HIGH
-            ).apply {
-                description = "Notifications for budget overage expiration"
-            }
-
-            notificationManager.createNotificationChannel(deadlineChannel)
-            notificationManager.createNotificationChannel(overageChannel)
-        }
+        NotificationChannels.createNotificationChannels(context)
     }
 
     fun checkNotificationPermission(context: Context): Boolean {
@@ -69,17 +48,18 @@ object NotificationScheduler {
 
     /**
      * Converts date-only deadlines to 23:59:59 local time in [zoneId], returning target Instant.
-     * If time is specified (deadlineHasTime == true), returns original deadlineAt.
+     * [deadlineDateOnly] preserves the user-selected local date across time-zone changes.
      */
     fun calculateDeadlineInstant(
         deadlineAt: Instant,
         deadlineHasTime: Boolean,
+        deadlineDateOnly: LocalDate? = null,
         zoneId: ZoneId = ZoneId.systemDefault()
     ): Instant {
         if (deadlineHasTime) {
             return deadlineAt
         }
-        val localDate = deadlineAt.atZone(zoneId).toLocalDate()
+        val localDate = deadlineDateOnly ?: deadlineAt.atZone(zoneId).toLocalDate()
         return localDate.atTime(23, 59, 59).atZone(zoneId).toInstant()
     }
 
@@ -135,7 +115,12 @@ object NotificationScheduler {
             return
         }
 
-        val targetInstant = calculateDeadlineInstant(link.deadlineAt!!, link.deadlineHasTime, zoneId)
+        val targetInstant = calculateDeadlineInstant(
+            deadlineAt = link.deadlineAt!!,
+            deadlineHasTime = link.deadlineHasTime,
+            deadlineDateOnly = link.deadlineDateOnly,
+            zoneId = zoneId
+        )
         val now = Instant.now()
 
         val remindersToSchedule = mutableMapOf<String, Instant>()
@@ -279,5 +264,11 @@ object NotificationScheduler {
     fun cancelOverageExpiryReminder(context: Context) {
         WorkManager.getInstance(context).cancelUniqueWork(OverageExpiryWorker.UNIQUE_WORK_NAME)
         WorkManager.getInstance(context).cancelAllWorkByTag(OverageExpiryWorker.WORK_TAG)
+    }
+
+    /** Cancels every known reminder before a destructive local data wipe. */
+    fun cancelAllForDataWipe(context: Context, linkIds: Collection<String>) {
+        linkIds.forEach { cancelDeadlineNotifications(context, it) }
+        cancelOverageExpiryReminder(context)
     }
 }

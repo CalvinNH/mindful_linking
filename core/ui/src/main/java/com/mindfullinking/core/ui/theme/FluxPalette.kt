@@ -60,6 +60,32 @@ data class FluxColors(
     val borderInverted: Color = Color(0x3FFFFFFF),
     val statusWarning: Color = FluxPalette.Signal,
     val statusDanger: Color = Color(0xFFD32F2F)
-)
+) {
+    companion object {
+        /**
+         * Dark scheme keeps the measured Bauhaus accents while moving structural surfaces to
+         * charcoal. Accent labels remain charcoal, never white, to preserve the contrast rule.
+         */
+        fun dark() = FluxColors(
+            background = FluxPalette.Void,
+            canvas = FluxPalette.CharcoalMuted,
+            surface = FluxPalette.CharcoalMuted,
+            // Structural charcoal stays charcoal in either scheme; only its foreground changes.
+            surfaceInverted = FluxPalette.Void,
+            contentPrimary = FluxPalette.Paper,
+            contentSecondary = FluxPalette.Paper.copy(alpha = 0.76f),
+            contentOnInverted = FluxPalette.Paper,
+            accentAction = FluxPalette.Signal,
+            contentOnAction = FluxPalette.Void,
+            accentData = FluxPalette.Lavender,
+            contentOnData = FluxPalette.Void,
+            accentDataMuted = FluxPalette.LavenderMuted,
+            border = FluxPalette.Paper.copy(alpha = 0.28f),
+            borderInverted = FluxPalette.Void.copy(alpha = 0.28f),
+            statusWarning = FluxPalette.Signal,
+            statusDanger = Color(0xFFFF8A80)
+        )
+    }
+}
 
 val LocalFluxColors = staticCompositionLocalOf { FluxColors() }

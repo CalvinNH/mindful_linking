@@ -200,7 +200,8 @@ fun OverBudgetModal(
                                             text = "P${p.value}",
                                             onClick = { selectedNewPriority = p },
                                             variant = if (selectedNewPriority == p) FluxButtonVariant.Primary else FluxButtonVariant.Dark,
-                                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 6.dp)
+                                            minWidth = 0.dp,
+                                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 6.dp)
                                         )
                                     }
                                 }

@@ -5,15 +5,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import com.mindfullinking.core.ui.theme.FluxPalette
 import com.mindfullinking.core.ui.theme.FluxTheme
 
 enum class FluxProgressVariant {
@@ -30,13 +30,15 @@ fun FluxProgress(
     progress: Float,
     modifier: Modifier = Modifier,
     variant: FluxProgressVariant = FluxProgressVariant.Action,
-    height: Dp = 10.dp,
-    trackColor: Color = FluxPalette.Surface
+    height: Dp = FluxTheme.spacing.progressHeight,
+    trackColor: Color = FluxTheme.colors.background,
+    label: String = "Progress"
 ) {
+    val normalizedProgress = progress.coerceIn(0f, 1f)
     val progressColor = when (variant) {
-        FluxProgressVariant.Action -> FluxPalette.Signal
-        FluxProgressVariant.Data -> FluxPalette.Lavender
-        FluxProgressVariant.Charcoal -> FluxPalette.Void
+        FluxProgressVariant.Action -> FluxTheme.colors.accentAction
+        FluxProgressVariant.Data -> FluxTheme.colors.accentData
+        FluxProgressVariant.Charcoal -> FluxTheme.colors.surfaceInverted
     }
 
     Box(
@@ -45,11 +47,15 @@ fun FluxProgress(
             .height(height)
             .clip(FluxTheme.shapes.pill)
             .background(trackColor)
+            .semantics {
+                contentDescription = label
+                progressBarRangeInfo = ProgressBarRangeInfo(normalizedProgress, 0f..1f)
+            }
     ) {
         Box(
             modifier = Modifier
                 .fillMaxHeight()
-                .fillMaxWidth(progress.coerceIn(0f, 1f))
+                .fillMaxWidth(normalizedProgress)
                 .clip(FluxTheme.shapes.pill)
                 .background(progressColor)
         )

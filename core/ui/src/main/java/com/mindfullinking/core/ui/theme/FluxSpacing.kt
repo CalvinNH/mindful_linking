@@ -26,7 +26,17 @@ data class FluxSpacing(
     val cardPaddingRegular: Dp = 20.dp,
     val cardPaddingHero: Dp = 24.dp,
     
-    val touchTargetMin: Dp = 48.dp
+    val touchTargetMin: Dp = 48.dp,
+    val buttonMinWidth: Dp = 64.dp,
+    val iconMedium: Dp = 20.dp,
+    val progressHeight: Dp = 10.dp,
+    val switchTrackWidth: Dp = 50.dp,
+    val switchTrackHeight: Dp = 28.dp,
+    val switchThumb: Dp = 24.dp,
+    val switchInset: Dp = 2.dp,
+    val badgeHorizontalPadding: Dp = 10.dp,
+    val borderThin: Dp = 1.dp,
+    val borderEmphasis: Dp = 2.dp
 )
 
 val LocalFluxSpacing = staticCompositionLocalOf { FluxSpacing() }

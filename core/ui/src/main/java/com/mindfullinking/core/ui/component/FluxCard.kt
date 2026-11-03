@@ -4,14 +4,17 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.unit.dp
-import com.mindfullinking.core.ui.theme.FluxPalette
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import com.mindfullinking.core.ui.theme.FluxTheme
 
 enum class FluxCardVariant {
@@ -33,25 +36,33 @@ fun FluxCard(
     shape: Shape = FluxTheme.shapes.cardPrimary,
     border: BorderStroke? = null,
     onClick: (() -> Unit)? = null,
+    contentDescription: String? = null,
     contentPadding: PaddingValues = PaddingValues(FluxTheme.spacing.cardPaddingRegular),
     content: @Composable () -> Unit
 ) {
+    val colors = FluxTheme.colors
     val containerColor = when (variant) {
-        FluxCardVariant.Paper -> FluxPalette.Paper
-        FluxCardVariant.Charcoal -> FluxPalette.Void
-        FluxCardVariant.Canvas -> FluxPalette.CanvasLime
-        FluxCardVariant.Signal -> FluxPalette.Signal
-        FluxCardVariant.Lavender -> FluxPalette.Lavender
-        FluxCardVariant.Surface -> FluxPalette.Surface
+        FluxCardVariant.Paper -> colors.surface
+        FluxCardVariant.Charcoal -> colors.surfaceInverted
+        FluxCardVariant.Canvas -> colors.canvas
+        FluxCardVariant.Signal -> colors.accentAction
+        FluxCardVariant.Lavender -> colors.accentData
+        FluxCardVariant.Surface -> colors.background
     }
 
     val contentColor = when (variant) {
-        FluxCardVariant.Charcoal -> FluxPalette.Paper
-        else -> FluxPalette.Void
+        FluxCardVariant.Charcoal -> colors.contentOnInverted
+        else -> colors.contentPrimary
     }
 
     val clickableModifier = if (onClick != null) {
-        Modifier.clickable(onClick = onClick)
+        Modifier
+            .defaultMinSize(minHeight = FluxTheme.spacing.touchTargetMin)
+            .clickable(onClick = onClick)
+            .semantics {
+                role = Role.Button
+                if (contentDescription != null) this.contentDescription = contentDescription
+            }
     } else {
         Modifier
     }
@@ -62,7 +73,6 @@ fun FluxCard(
         color = containerColor,
         contentColor = contentColor,
         border = border,
-        shadowElevation = 0.dp
     ) {
         Box(modifier = Modifier.padding(contentPadding)) {
             content()
