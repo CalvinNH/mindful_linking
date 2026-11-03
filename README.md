@@ -222,4 +222,3 @@ limitations under the License.
 <div align="center">
 <sub>Crafted with intentionality and focus.</sub>
 </div>
-EOF
